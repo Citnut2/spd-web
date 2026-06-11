@@ -31,7 +31,10 @@ export class GameScene extends Scene {
   private mapWidth = 38;
   private isBusy = false;
   private pathQueue: number[] = [];
-  private uiLayerRef: Container | null = null;
+
+  private worldContainer: Container | null = null;
+  private hudContainer: Container | null = null;
+  private overlayContainer: Container | null = null;
 
   setCamera(camera: Camera): void {
     this.cameraRef = camera;
@@ -55,12 +58,20 @@ export class GameScene extends Scene {
     }
     if (!this.cameraRef || !hero) return;
 
-    this.uiLayerRef = this.spdGame.uiLayer;
+    // Get named layer containers from SPDGame
+    this.worldContainer = this.spdGame.worldContainer;
+    this.hudContainer = this.spdGame.hudContainer;
+    this.overlayContainer = this.spdGame.overlayContainer;
+
+    // Ensure HUD layer is interactive
+    this.hudContainer.eventMode = 'static';
+    this.overlayContainer.eventMode = 'static';
 
     const waterPath = lvl.waterTex();
     if (waterPath) {
       await Assets.load(waterPath);
     }
+
     const [heroTex, ratTex, slimeTex] = await Promise.all([
       Assets.load('assets/sprites/warrior.png'),
       Assets.load('assets/sprites/rat.png'),
@@ -70,6 +81,9 @@ export class GameScene extends Scene {
     this.dungeonRenderer = new DungeonRenderer(this.cameraRef);
     await this.dungeonRenderer.loadTileSheet('assets/environment/tiles_sewers.png');
     this.dungeonRenderer.setLevel(lvl);
+
+    // Add dungeon renderer to world container (under camera)
+    this.worldContainer.addChild(this.dungeonRenderer.container);
 
     this.heroSprite = new HeroSprite();
     this.heroSprite.init(heroTex);
@@ -95,8 +109,7 @@ export class GameScene extends Scene {
     }
 
     this.fogOfWar = new FogOfWar(lvl.width, lvl.height);
-    this.container.addChild(this.dungeonRenderer.container);
-    this.container.addChild(this.fogOfWar);
+    this.worldContainer.addChild(this.fogOfWar);
 
     this.updateFogAndVisibility(hero);
 
@@ -108,11 +121,12 @@ export class GameScene extends Scene {
       if (lvl) lvl.drop(item, pos);
     });
 
+    // Create HUD and add to HUD container (not under camera)
     this.hud = new HUD(hero);
     this.hud.positionElements(this.spdGame.viewport);
-    this.uiLayerRef.addChild(this.hud.container);
+    this.hudContainer.addChild(this.hud.container);
 
-    this.hud.toolbar.setCallbacks({
+    this.hud.inventoryPanel.setCallbacks({
       onWait: () => {
         const h = Dungeon.hero;
         if (!h || !h.isAlive()) return;
@@ -127,9 +141,10 @@ export class GameScene extends Scene {
         if (!h) return;
         const vm = this.spdGame!.viewport;
         const wnd = new WndBag(h);
-        wnd.x = (vm.viewportWidth - WndBag.WIDTH) / 2;
-        wnd.y = (vm.viewportHeight - WndBag.HEIGHT) / 2;
-        this.uiLayerRef!.addChild(wnd);
+        // Center in overlay space
+        wnd.x = Math.round((vm.viewportWidth - WndBag.WIDTH) / 2);
+        wnd.y = Math.round((vm.viewportHeight - WndBag.HEIGHT) / 2);
+        this.overlayContainer!.addChild(wnd);
         wnd.on('removed', () => {
           this.hud?.refresh();
         });
@@ -227,8 +242,10 @@ export class GameScene extends Scene {
   private _keyHandler: EventListener | null = null;
 
   private setupPointerInput(): void {
-    this.container.eventMode = 'static';
-    this.container.on('pointerdown', (e: any) => {
+    // World container receives pointer events for game interaction
+    if (!this.worldContainer) return;
+    this.worldContainer.eventMode = 'static';
+    this.worldContainer.on('pointerdown', (e: any) => {
       if (this.isBusy || !Dungeon.hero?.isAlive()) return;
       const level = Dungeon.level;
       const hero = Dungeon.hero;
@@ -365,16 +382,14 @@ export class GameScene extends Scene {
     if (this._keyHandler) {
       window.removeEventListener('keydown', this._keyHandler);
     }
-    if (this.hud) {
-      this.hud.container.removeFromParent();
-      this.hud = null;
-    }
+    this.worldContainer?.removeChildren();
+    this.hudContainer?.removeChildren();
+    this.overlayContainer?.removeChildren();
     this.mobSprites = [];
     this.heroSprite = null;
     this.fogOfWar = null;
     this.dungeonRenderer = null;
-    this.uiLayerRef = null;
-    this.spdGame = null;
+    this.hud = null;
     super.destroy();
   }
 }

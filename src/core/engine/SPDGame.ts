@@ -10,10 +10,9 @@ export class SPDGame extends Game {
   readonly camera: Camera;
   readonly viewport: ViewportManager;
 
-  readonly worldLayer: Container;
-  readonly effectLayer: Container;
-  readonly uiLayer: Container;
-  readonly debugLayer: Container;
+  readonly worldContainer: Container;
+  readonly hudContainer: Container;
+  readonly overlayContainer: Container;
 
   sceneManager: SceneManager | null = null;
 
@@ -26,20 +25,17 @@ export class SPDGame extends Game {
     this.camera = new Camera();
     this.viewport = this.renderer.viewport;
 
-    this.worldLayer = new Container();
-    this.worldLayer.label = 'world-layer';
-    this.worldLayer.eventMode = 'static';
+    this.worldContainer = new Container();
+    this.worldContainer.label = 'world-container';
+    this.worldContainer.eventMode = 'static';
 
-    this.effectLayer = new Container();
-    this.effectLayer.label = 'effect-layer';
+    this.hudContainer = new Container();
+    this.hudContainer.label = 'hud-container';
+    this.hudContainer.eventMode = 'static';
 
-    this.uiLayer = new Container();
-    this.uiLayer.label = 'ui-layer';
-    this.uiLayer.eventMode = 'none';
-
-    this.debugLayer = new Container();
-    this.debugLayer.label = 'debug-layer';
-    this.debugLayer.eventMode = 'none';
+    this.overlayContainer = new Container();
+    this.overlayContainer.label = 'overlay-container';
+    this.overlayContainer.eventMode = 'none';
   }
 
   async init(container: HTMLElement): Promise<void> {
@@ -47,11 +43,10 @@ export class SPDGame extends Game {
 
     const root = this.renderer.root;
 
-    this.camera.container.addChild(this.worldLayer);
-    this.camera.container.addChild(this.effectLayer);
+    this.camera.container.addChild(this.worldContainer);
     root.addChild(this.camera.container);
-    root.addChild(this.uiLayer);
-    root.addChild(this.debugLayer);
+    root.addChild(this.hudContainer);
+    root.addChild(this.overlayContainer);
   }
 
   start(): void {

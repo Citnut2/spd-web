@@ -13,16 +13,20 @@ const SCENE_REGISTRY: Record<string, new () => Scene> = {
 };
 
 export class SceneManager {
-  readonly worldLayer: Container;
-  readonly uiLayer: Container;
+  readonly worldContainer: Container;
+  readonly hudContainer: Container;
+  readonly overlayContainer: Container;
   private current: Scene | null = null;
   private currentKey: string | null = null;
   private viewport: ViewportManager;
+  private spdGame: SPDGame;
 
   constructor(game: SPDGame) {
-    this.worldLayer = game.worldLayer;
-    this.uiLayer = game.uiLayer;
+    this.worldContainer = game.worldContainer;
+    this.hudContainer = game.hudContainer;
+    this.overlayContainer = game.overlayContainer;
     this.viewport = game.viewport;
+    this.spdGame = game;
   }
 
   async switchTo(key: string): Promise<void> {
@@ -30,8 +34,12 @@ export class SceneManager {
 
     if (this.current) {
       this.current.destroy();
-      this.worldLayer.removeChildren();
     }
+
+    // Clear all layers
+    this.worldContainer.removeChildren();
+    this.hudContainer.removeChildren();
+    this.overlayContainer.removeChildren();
 
     const SceneClass = SCENE_REGISTRY[key];
     if (!SceneClass) {
@@ -41,8 +49,12 @@ export class SceneManager {
 
     this.current = new SceneClass();
     this.currentKey = key;
+    this.current.setGame(this.spdGame);
 
-    this.worldLayer.addChild(this.current.container);
+    // Add scene container to HUD layer so it's in the scene graph
+    // Game worlds populate worldContainer directly
+    this.hudContainer.addChild(this.current.container);
+
     await this.current.create();
   }
 

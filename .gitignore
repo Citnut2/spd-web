@@ -18,4 +18,4 @@ sdt/test-agent/java/build/
 sdt/test-agent/java/.gradle/
 sdt/test-agent/java/bin/
 
-./package-lock.json
+package-lock.json

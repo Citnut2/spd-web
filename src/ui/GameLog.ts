@@ -43,7 +43,6 @@ export class GameLog extends Container {
       this.entries.push({ text: msg, color });
     }
 
-    // Collapse into lines: append to last if same color
     this.lines = [];
     for (const entry of this.entries) {
       const last = this.lines[this.lines.length - 1];
@@ -54,7 +53,6 @@ export class GameLog extends Container {
       }
     }
 
-    // Keep only last MAX_LINES
     if (this.lines.length > MAX_LINES) {
       this.lines = this.lines.slice(this.lines.length - MAX_LINES);
     }

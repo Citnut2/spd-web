@@ -1,12 +1,19 @@
 import { Container } from 'pixi.js';
 import type { ViewportManager } from '../core/engine/ViewportManager';
+import type { SPDGame } from '../core/engine/SPDGame';
 
 export abstract class Scene {
-  readonly container = (() => {
-    const c = new Container();
-    c.eventMode = 'static';
-    return c;
-  })();
+  readonly container: Container;
+  protected game: SPDGame | null = null;
+
+  constructor() {
+    this.container = new Container();
+    this.container.eventMode = 'static';
+  }
+
+  setGame(game: SPDGame): void {
+    this.game = game;
+  }
 
   abstract create(): void | Promise<void>;
   update(): void { /* no-op */ }
@@ -16,7 +23,6 @@ export abstract class Scene {
   }
 
   destroy(): void {
-    this.container.removeFromParent();
     this.container.removeChildren();
   }
 }
