@@ -51,12 +51,15 @@ Port **Shattered Pixel Dungeon** (1,277 Java files, v3.3.5) from Java/LibGDX →
 
 | # | Task | Priority | Status |
 |---|------|----------|--------|
-| A1 | Wire mob variety in SewerLevel (Gnoll, Crab, Swarm, Snake, Slime) — classes exist, createMob() only returns Rat | High | 🔲 |
-| A2 | Item pickup on step-over (heap detection → collect) | High | ✅ |
-| A3 | WndBag interactive inventory (equip/use/drop via UI) | High | ✅ |
-| A4 | SewerBossLevel + Goo boss | Medium | 🔲 |
-| A5 | PrisonLevel painter + rooms | Medium | 🔲 |
-| A6 | Interactable tiles (doors, traps, wells, grass) | Medium | 🔲 |
+| A1 | Wire mob variety in SewerLevel (Gnoll, Crab, Swarm, Snake, Slime) — 6 types via depth-table | High | ✅ |
+| A2 | Wire combat stats (weapons → damageRoll, armor → drRoll, surprise attacks) | High | ✅ |
+| A3 | Wire mob SLEEPING state (all mobs start asleep, wake on proximity) | High | ✅ |
+| A4 | Wire mob FLEEING state (flee at 30% HP) | High | ✅ |
+| A5 | Wire mob loot drops (createLoot() in die()) | High | ✅ |
+| A6 | GameScene: all mob textures + sprite mapping + death cleanup | High | ✅ |
+| A7 | SewerBossLevel + Goo boss | Medium | 🔲 |
+| A8 | PrisonLevel painter + rooms | Medium | 🔲 |
+| A9 | Interactable tiles (doors, traps, wells, grass) | Medium | 🔲 |
 
 ## Phase 2: Items & Inventory
 
@@ -92,7 +95,7 @@ Port **Shattered Pixel Dungeon** (1,277 Java files, v3.3.5) from Java/LibGDX →
 | 3.5 | Boss levels (5) | 🔲 |
 | 3.6 | Traps system | 🔲 |
 | 3.7 | Shops + shopOnLevel | 🔲 |
-| 3.8 | Enemy variety (85 types, 7 sewer mob classes ported, 2 wired: Rat, Slime) | 🔲 | Gnoll, Crab, Swarm, Snake, Goo classes exist but not spawned |
+| 3.8 | Enemy variety (85 types, 7 sewer mob classes ported, 6 wired via depth-table) | ✅ | All 6 sewer mob types spawn with probability table |
 
 ## Phase 4: Advanced Systems
 
@@ -139,9 +142,9 @@ npm run build → success
 npm run test:e2e → 6/6 pass
 ```
 
-**What's playable:** Hero walks with WASD/arrows, fights Rats in Sewers (5 other mob types ported but not spawned), fog-of-war, smooth camera, item spawning (potions, scrolls, wands, rings, food, gold), HUD with health/inventory button, interactive inventory (open bag → view items → equip/use/drop), item pickup on step-over.
+**What's playable:** Hero walks with WASD/arrows, fights 6 Sewer mob types (Rat, Gnoll, Crab, Slime, Snake, Swarm) with depth-based variety, surprise attacks, FLEEING AI (30% HP), weapons/armor wired into combat stats, loot drops on kill, fog-of-war, smooth camera, item spawning, HUD, interactive inventory, item pickup on step-over.
 
-**Porting state of all 7 Sewer mobs:** All classes (Rat, Gnoll, Crab, Slime, Snake, Swarm, Goo) and their sprites are fully implemented. 20/87 buffs ported. 3 melee weapons, 2 armor types, 12 potions, 12 scrolls, wand-of-MM, 2 rings, food base.
+**Porting state of all 7 Sewer mobs:** All classes + sprites implemented and wired into level generation. Full combat system: `attackSkill()`, `defenseSkill()`, `damageRoll()`, `drRoll()` all use equipped items. All mobs start SLEEPING (wake on proximity). 20/87 buffs ported. 6 melee weapons, 4 armor types, 12 potions, 12 scrolls, wand-of-MM, 2 rings, food base.
 
 ---
 
@@ -175,17 +178,21 @@ app.stage (PixiJS v8 Application)
 
 ---
 
-## Next Steps (Phase A Order)
+## Next Steps (Phase 2 Focus: Animation & VFX)
 
-Sewer mob classes (Rat, Gnoll, Crab, Slime, Snake, Swarm, Goo) and all mob sprites are fully ported — just not wired.
+All Phase A combat wiring, mob variety, AI states, and loot drops are complete. Next focus is visual feedback:
 
-1. **A1** — Wire all 7 mob types into SewerLevel.createMobs() with depth-based probability table
-2. **Wire mob sprites in GameScene** — load textures + instantiate correct sprite classes per mob type
-3. **A4** — SewerBossLevel: boss arena + Goo boss placement on depth 5
-4. **Mob loot drops** — wire Mob.createLoot() into Mob.die()
-5. **Fix Albino bleeding** — uncomment Bleeding buff in Albino.attackProc()
-6. **A6** — Interactable tiles: doors, traps, wells, high grass
-7. **A5** — PrisonLevel port: painter, rooms, depth 6-10
+1. **Attack animation** — Play attackFrames on attacker sprite, flash on defender
+2. **Death animation** — `setupDeathFade()` on mob kill + `killAndErase()`
+3. **Damage numbers** — FloatingText showing damage dealt
+4. **Blood particles** — `Blood` effect emitter on hit
+5. **Hit flash** — `sprite.flash()` on damage
+6. **Sleep sparkle** — Zzz indicator above SLEEPING mobs
+7. **Cell highlighting** — Hover/path preview tiles
+8. **Camera shake** — `camera.addShake()` for big hits
+9. **SewerBossLevel** — Goo boss arena on depth 5
+10. **PrisonLevel** — painter, rooms, depth 6-10
+11. **Fix Albino bleeding** — uncomment Bleeding buff in Albino.attackProc()
 
 ---
 

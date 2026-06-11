@@ -1,6 +1,6 @@
 // Port of com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Rat
 
-import { Mob, MobState } from './Mob';
+import { Mob } from './Mob';
 import { Char } from '../Char';
 import { Int as RandInt } from '../../utils/Random';
 
@@ -17,7 +17,6 @@ export class Rat extends Mob {
     this.baseDefenseSkill = Rat.RAT_DEF;
     this.EXP = 1;
     this.maxLoot = 0;
-    this.state = MobState.WANDERING;
   }
 
   act(): boolean {

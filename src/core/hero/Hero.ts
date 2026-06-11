@@ -66,7 +66,40 @@ export class Hero extends Char {
   }
 
   damageRoll(): number {
+    const weapon = this.belongings.attackingWeapon();
+    if (weapon && typeof (weapon as any).damageRoll === 'function') {
+      return (weapon as any).damageRoll(this);
+    }
     return IntRange(1, 6);
+  }
+
+  attackSkill(_target: Char): number {
+    let acc = this.baseAttackSkill + this.attackSkillBonus;
+    const weapon = this.belongings.attackingWeapon();
+    if (weapon && typeof (weapon as any).accuracyFactor === 'function') {
+      acc = Math.round(acc * (weapon as any).accuracyFactor(this));
+    }
+    return acc;
+  }
+
+  defenseSkill(_target: Char): number {
+    let def = this.baseDefenseSkill + this.defenseSkillBonus;
+    const armor = this.belongings.armor;
+    if (armor && typeof (armor as any).evasionFactor === 'function') {
+      def = Math.round(def * (armor as any).evasionFactor(this));
+    }
+    return def;
+  }
+
+  drRoll(): number {
+    const armor = this.belongings.armor;
+    if (armor && typeof (armor as any).DRMin === 'function') {
+      const min = (armor as any).DRMin();
+      const max = (armor as any).DRMax();
+      if (max > min) return IntRange(min, max);
+      return min;
+    }
+    return 0;
   }
 
   interrupt(): void {

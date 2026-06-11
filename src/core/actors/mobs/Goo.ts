@@ -18,7 +18,6 @@ export class Goo extends Mob {
     this.baseAttackSkill = Goo.GOO_ATK;
     this.baseDefenseSkill = 8;
     this.EXP = 10;
-    this.state = MobState.WANDERING;
 
     this._properties.add('BOSS');
     this._properties.add('DEMONIC');

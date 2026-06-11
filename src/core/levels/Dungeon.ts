@@ -5,6 +5,7 @@ import { Level } from './Level';
 import { SewerLevel } from './SewerLevel';
 import { pushGenerator, popGenerator, Long } from '../utils/Random';
 import { Generator } from '../items/Generator';
+import { LevelRef } from './LevelRef';
 
 export class Dungeon {
   static hero: Hero;
@@ -94,6 +95,7 @@ export class Dungeon {
     popGenerator();
 
     Dungeon.level = level;
+    LevelRef.current = level;
 
     // Place hero at level entrance
     if (Dungeon.hero) {

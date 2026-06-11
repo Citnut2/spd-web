@@ -6,6 +6,7 @@ import { GLog } from '../../ui/GLog';
 import { Game } from '../engine/Game';
 import type { Buff } from './buffs/Buff';
 import type { CharSprite } from '../sprites/CharSprite';
+import { LevelRef } from '../levels/LevelRef';
 
 export enum Alignment {
   ENEMY = 'ENEMY',
@@ -61,8 +62,13 @@ export abstract class Char extends Actor {
     if (this.sprite) {
       this.sprite.turnTo(this.pos, target.pos);
     }
-    if (this.hit(target)) {
-      const dmg = this.damageRoll();
+
+    const surprised = target.surprisedBy(this);
+
+    if (surprised || this.hit(target)) {
+      let dmg = this.damageRoll();
+      dmg = this.attackProc(target, dmg);
+      dmg = target.defenseProc(this, dmg);
       target.takeDamage(dmg, this);
       if (this.alignment === Alignment.ALLY) {
         GLog.add(`@@You hit ${target.displayName} for ${dmg} damage`);
@@ -84,10 +90,25 @@ export abstract class Char extends Actor {
   }
 
   hit(target: Char): boolean {
-    const accuracy = 1;
-    const acuRoll = Float(this.baseAttackSkill);
-    const defRoll = Float(target.baseDefenseSkill);
-    return acuRoll >= defRoll * accuracy;
+    const acuRoll = Float(this.attackSkill(target));
+    const defRoll = Float(target.defenseSkill(this));
+    return acuRoll >= defRoll;
+  }
+
+  attackSkill(_target: Char): number {
+    return this.baseAttackSkill + this.attackSkillBonus;
+  }
+
+  defenseSkill(_target: Char): number {
+    return this.baseDefenseSkill + this.defenseSkillBonus;
+  }
+
+  attackProc(_target: Char, damage: number): number {
+    return damage;
+  }
+
+  defenseProc(_enemy: Char, damage: number): number {
+    return damage;
   }
 
   damageRoll(): number {
@@ -102,12 +123,34 @@ export abstract class Char extends Actor {
     const effective = Math.max(0, dmg - this.drRoll());
     this.HP = Math.max(0, this.HP - effective);
     if (this.HP <= 0) {
-      if (this.alignment === Alignment.ALLY) {
-        GLog.add(`!!You were killed by ${_src.displayName}...`);
-      } else {
-        GLog.add(`${this.displayName} was killed!`);
-      }
+      this.die(_src);
     }
+  }
+
+  die(_src: Char): void {
+    if (this.alignment === Alignment.ALLY) {
+      GLog.add(`!!You were killed by ${_src.displayName}...`);
+    } else {
+      GLog.add(`${this.displayName} was killed!`);
+    }
+  }
+
+  surprisedBy(attacker: Char): boolean {
+    const level = LevelRef.current;
+    if (!level) return false;
+    const d = this.distanceBetween(attacker.pos, this.pos, level.width);
+    return !level.heroFOV[attacker.pos] && d <= 1;
+  }
+
+  distanceBetween(a: number, b: number, mapWidth?: number): number {
+    const w = mapWidth ?? LevelRef.current?.width ?? 1;
+    const ax = a % w;
+    const ay = Math.floor(a / w);
+    const bx = b % w;
+    const by = Math.floor(b / w);
+    const dx = ax - bx;
+    const dy = ay - by;
+    return Math.sqrt(dx * dx + dy * dy);
   }
 
   // ----- Buff management -----

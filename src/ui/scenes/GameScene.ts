@@ -6,6 +6,11 @@ import { FogOfWar } from '../../core/rendering/FogOfWar';
 import { HeroSprite } from '../../core/sprites/HeroSprite';
 import { RatSprite } from '../../core/sprites/RatSprite';
 import { SlimeSprite } from '../../core/sprites/SlimeSprite';
+import { GnollSprite } from '../../core/sprites/GnollSprite';
+import { CrabSprite } from '../../core/sprites/CrabSprite';
+import { SnakeSprite } from '../../core/sprites/SnakeSprite';
+import { SwarmSprite } from '../../core/sprites/SwarmSprite';
+import { GooSprite } from '../../core/sprites/GooSprite';
 import { CharSprite } from '../../core/sprites/CharSprite';
 import { Camera } from '../../core/engine/Camera';
 import { ViewportManager } from '../../core/engine/ViewportManager';
@@ -79,11 +84,34 @@ export class GameScene extends Scene {
 
     await Toolbar.preload();
 
-    const [heroTex, ratTex, slimeTex] = await Promise.all([
+    const [heroTex, ratTex, gnollTex, crabTex, slimeTex, snakeTex, swarmTex, gooTex] = await Promise.all([
       Assets.load('assets/sprites/warrior.png'),
       Assets.load('assets/sprites/rat.png'),
+      Assets.load('assets/sprites/gnoll.png'),
+      Assets.load('assets/sprites/crab.png'),
       Assets.load('assets/sprites/slime.png'),
+      Assets.load('assets/sprites/snake.png'),
+      Assets.load('assets/sprites/swarm.png'),
+      Assets.load('assets/sprites/goo.png'),
     ]);
+    const mobTextures: Record<string, typeof ratTex> = {
+      Rat: ratTex,
+      Gnoll: gnollTex,
+      Crab: crabTex,
+      Slime: slimeTex,
+      Snake: snakeTex,
+      Swarm: swarmTex,
+      Goo: gooTex,
+    };
+    const mobSpriteClasses: Record<string, new () => CharSprite> = {
+      Rat: RatSprite,
+      Gnoll: GnollSprite,
+      Crab: CrabSprite,
+      Slime: SlimeSprite,
+      Snake: SnakeSprite,
+      Swarm: SwarmSprite,
+      Goo: GooSprite,
+    };
 
     this.dungeonRenderer = new DungeonRenderer(this.cameraRef);
     await this.dungeonRenderer.loadTileSheet('assets/environment/tiles_sewers.png');
@@ -128,17 +156,15 @@ export class GameScene extends Scene {
     this.dungeonRenderer.sprites.addChild(this.heroSprite);
 
     for (const mob of lvl.mobs as Mob[]) {
-      let sprite: CharSprite;
-      if (mob.constructor.name === 'Rat') {
-        sprite = new RatSprite();
-        (sprite as RatSprite).init(ratTex);
-      } else {
-        sprite = new SlimeSprite();
-        (sprite as SlimeSprite).init(slimeTex);
-      }
+      const cls = mobSpriteClasses[mob.constructor.name];
+      const tex = mobTextures[mob.constructor.name];
+      if (!cls || !tex) continue;
+      const sprite = new cls() as any as CharSprite;
+      (sprite as any).init(tex);
       sprite.link(mob, this.mapWidth);
       sprite.updateSprite(this.mapWidth);
-      if ('idle' in sprite) sprite.idle();
+      sprite.idle();
+      mob.sprite = sprite;
       this.mobSprites.push(sprite);
       this.dungeonRenderer.sprites.addChild(sprite);
     }
@@ -256,14 +282,7 @@ export class GameScene extends Scene {
         hero.attack(enemy);
         if (!enemy.isAlive()) {
           hero.gainExp((enemy as Mob).EXP || 1);
-        }
-        if (enemy && !enemy.isAlive()) {
-          const idx = this.mobSprites.indexOf(
-            this.mobSprites.find(s => (s as unknown as Record<string, unknown>)['ch'] === enemy)!,
-          );
-          if (idx >= 0) {
-            (this.mobSprites[idx] as CharSprite).visible = false;
-          }
+          this.removeMobSprite(enemy);
         }
       } else {
         Door.leave(oldPos, level);
@@ -306,14 +325,17 @@ export class GameScene extends Scene {
   }
 
   private handleCellClick(cell: number, hero: Char, level: any): void {
-    for (const mob of level.mobs as Mob[]) {
-      if (mob.pos === cell && mob.isAlive()) {
-        hero.attack(mob);
-        if (!mob.isAlive()) (hero as Hero).gainExp((mob as Mob).EXP || 1);
-        this.processTurn(hero, level);
-        return;
+      for (const mob of level.mobs as Mob[]) {
+        if (mob.pos === cell && mob.isAlive()) {
+          hero.attack(mob);
+          if (!mob.isAlive()) {
+            (hero as Hero).gainExp((mob as Mob).EXP || 1);
+            this.removeMobSprite(mob);
+          }
+          this.processTurn(hero, level);
+          return;
+        }
       }
-    }
 
     if (cell === hero.pos) return;
     if (level.solid[cell]) return;
@@ -336,16 +358,19 @@ export class GameScene extends Scene {
 
     const next = this.pathQueue.shift()!;
 
-    for (const mob of level.mobs as Mob[]) {
-      if (mob.pos === next && mob.isAlive()) {
-        hero.attack(mob);
-        if (!mob.isAlive()) (hero as Hero).gainExp((mob as Mob).EXP || 1);
-        this.pathQueue = [];
-        this.isBusy = false;
-        this.processTurn(hero, level);
-        return;
+      for (const mob of level.mobs as Mob[]) {
+        if (mob.pos === next && mob.isAlive()) {
+          hero.attack(mob);
+          if (!mob.isAlive()) {
+            (hero as Hero).gainExp((mob as Mob).EXP || 1);
+            this.removeMobSprite(mob);
+          }
+          this.pathQueue = [];
+          this.isBusy = false;
+          this.processTurn(hero, level);
+          return;
+        }
       }
-    }
 
     if (!level.passable[next]) {
       this.pathQueue = [];
@@ -385,8 +410,21 @@ export class GameScene extends Scene {
     this.processTurn(hero, level);
   }
 
+  private removeMobSprite(enemy: Char): void {
+    const sprite = enemy.sprite;
+    if (!sprite) return;
+    const idx = this.mobSprites.indexOf(sprite);
+    if (idx >= 0) {
+      sprite.setVisible(false);
+      this.dungeonRenderer?.sprites.removeChild(sprite);
+      this.mobSprites.splice(idx, 1);
+    }
+  }
+
   private processTurn(hero: Char, level: any): void {
-    for (const mob of level.mobs as Mob[]) {
+    // Process mob turns; mobs may die during their turn and remove themselves
+    const alive = [...(level.mobs as Mob[]).filter((m: Mob) => m.isAlive())];
+    for (const mob of alive) {
       if (!mob.isAlive()) continue;
       mob.actAI();
     }

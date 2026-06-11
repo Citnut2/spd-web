@@ -1,6 +1,6 @@
 // Port of com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Slime
 
-import { Mob, MobState } from './Mob';
+import { Mob } from './Mob';
 import { Int as RandInt } from '../../utils/Random';
 
 export class Slime extends Mob {
@@ -18,7 +18,6 @@ export class Slime extends Mob {
     this.maxLvl = 9;
     this.maxLoot = 1;
     this.lootChance = 0.2;
-    this.state = MobState.WANDERING;
   }
 
   act(): boolean {

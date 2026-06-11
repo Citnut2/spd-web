@@ -26,6 +26,11 @@ import { Terrain, flags as terrainFlags } from './Terrain';
 import { Dungeon } from './Dungeon';
 import * as Random from '../utils/Random';
 import { Rat } from '../actors/mobs/Rat';
+import { Gnoll } from '../actors/mobs/Gnoll';
+import { Crab } from '../actors/mobs/Crab';
+import { Slime } from '../actors/mobs/Slime';
+import { Snake } from '../actors/mobs/Snake';
+import { Swarm } from '../actors/mobs/Swarm';
 
 export class SewerLevel extends RegularLevel {
 
@@ -70,12 +75,60 @@ export class SewerLevel extends RegularLevel {
     return [1];
   }
 
-  override createMob(): Rat | null {
-    return new Rat();
-  }
+  override createMob(): Rat | Gnoll | Crab | Slime | Snake | Swarm | null {
+    const depth = Dungeon.depth;
 
-  override createMobs(): void {
-    super.createMobs();
+    // Depth-based probability table [mob_class, weight]
+    // Weights are relative to each other within the same depth
+    const mobWeights: [new () => any, number][] = [];
+
+    // Depth 1: mostly rats, occasional gnolls
+    if (depth === 1) {
+      mobWeights.push([Rat, 4], [Gnoll, 1]);
+    }
+    // Depth 2: rats common, gnolls common, crabs/snakes/slimes start
+    else if (depth === 2) {
+      mobWeights.push(
+        [Rat, 3],
+        [Gnoll, 2],
+        [Crab, 1],
+        [Snake, 0.5],
+        [Slime, 0.5],
+      );
+    }
+    // Depth 3: full sewer variety
+    else if (depth === 3) {
+      mobWeights.push(
+        [Rat, 2],
+        [Gnoll, 2],
+        [Crab, 2],
+        [Snake, 1],
+        [Slime, 1],
+        [Swarm, 0.5],
+      );
+    }
+    // Depth 4: less rats, more of everything
+    else {
+      mobWeights.push(
+        [Rat, 1],
+        [Gnoll, 2],
+        [Crab, 2],
+        [Snake, 1],
+        [Slime, 1.5],
+        [Swarm, 1],
+      );
+    }
+
+    const totalWeight = mobWeights.reduce((sum, [, w]) => sum + w, 0);
+    let roll = Random.Float() * totalWeight;
+    for (const [cls, weight] of mobWeights) {
+      roll -= weight;
+      if (roll <= 0) {
+        return new cls();
+      }
+    }
+
+    return new Rat();
   }
 
   override tilesTex(): string {

@@ -3,8 +3,9 @@
 import { Char, Alignment } from '../Char';
 import { Actor } from '../Actor';
 import { PathFinder } from '../../utils/PathFinder';
-import { Int as RandInt } from '../../utils/Random';
+import { Float, Int as RandInt } from '../../utils/Random';
 import { Dungeon } from '../../levels/Dungeon';
+import type { Item } from '../../items/Item';
 
 export enum MobState {
   SLEEPING = 'SLEEPING',
@@ -15,14 +16,14 @@ export enum MobState {
 }
 
 export abstract class Mob extends Char {
-  state: MobState = MobState.WANDERING;
+  state: MobState = MobState.SLEEPING;
   priority = Actor.MOB_PRIO;
   EXP = 1;
   maxLvl = Number.MAX_SAFE_INTEGER;
 
   maxLoot = 0;
   lootChance = 0;
-  loot: any = null;
+  loot: Item | null = null;
 
   enemy?: Char;
   enemyPos = -1;
@@ -62,12 +63,20 @@ export abstract class Mob extends Char {
     if (this.state === MobState.SLEEPING) {
       return this.actSleep();
     }
+
+    if (this.state !== MobState.FLEEING && this.HP <= Math.floor(this.HT * 0.3)) {
+      this.state = MobState.FLEEING;
+    }
+
     this.enemySeen = false;
     if (this.enemy && this.enemy.isAlive() && this.enemy.pos !== this.pos) {
       this.enemySeen = this.canSee(this.enemy, Dungeon.level.heroFOV);
     }
     if (this.enemy && (!this.enemy.isAlive() || !this.canSee(this.enemy, Dungeon.level.heroFOV))) {
       this.enemy = undefined;
+      if (this.state === MobState.FLEEING && !this.enemySeen) {
+        this.state = MobState.WANDERING;
+      }
     }
     switch (this.state) {
       case MobState.WANDERING:
@@ -183,15 +192,6 @@ export abstract class Mob extends Char {
     return best;
   }
 
-  private distanceBetween(a: number, b: number): number {
-    const w = Dungeon.level?.width ?? 1;
-    const ax = a % w;
-    const ay = Math.floor(a / w);
-    const bx = b % w;
-    const by = Math.floor(b / w);
-    return Math.sqrt((ax - bx) ** 2 + (ay - by) ** 2);
-  }
-
   canAttack(enemy: Char): boolean {
     if (enemy.pos === this.pos) return true;
     const level = Dungeon.level;
@@ -245,5 +245,33 @@ export abstract class Mob extends Char {
 
   defenseProc(_enemy: Char, damage: number): number {
     return damage;
+  }
+
+  createLoot(): Item | null {
+    if (this.loot && Float() < this.lootChance) {
+      const lootItem = this.loot;
+      this.loot = null;
+      return lootItem;
+    }
+    return null;
+  }
+
+  die(_src: Char): void {
+    super.die(_src);
+    const loot = this.createLoot();
+    if (loot) {
+      const level = Dungeon.level;
+      if (level) {
+        level.drop(loot, this.pos);
+      }
+    }
+    // Remove from level mob list
+    const level = Dungeon.level;
+    if (level) {
+      const idx = level.mobs.indexOf(this);
+      if (idx >= 0) {
+        level.mobs.splice(idx, 1);
+      }
+    }
   }
 }
