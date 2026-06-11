@@ -28,7 +28,7 @@ Port **Shattered Pixel Dungeon** (1,277 Java files, v3.3.5) from Java/LibGDX →
 | 1.1 | Terrain (40 types + flag bitmask) | ✅ | `Terrain.ts` — constants match Java, 14 flags |
 | 1.2 | `Level.ts` base: size, FOV, flags, cleanWalls | ✅ | map[], flags, visited/mapped, `updateFieldOfView()` |
 | 1.3 | Room system (Room, StandardRoom, SpecialRoom, builders) | ✅ | Full port: Room, StandardRoom, SpecialRoom, builders, painters, 10 special rooms |
-| 1.4 | SewerLevel: rooms, corridors, water, grass, decorations | ✅ | Entrance/exit, water/grass tiles, Rat/Slime spawns |
+| 1.4 | SewerLevel: rooms, corridors, water, grass, decorations | ✅ | Entrance/exit, water/grass tiles, all sewer mob types ported (unwired) |
 | 1.5 | `Dungeon.ts`: seed, depth, init, newLevel | ✅ | `goDown()`, `initHero()`, depth transitions |
 | 1.6 | `Char.ts`: HP, attack, defense, damage, movement | ✅ | HP/STR, min/max attack, damage roll, buffs, alignment |
 | 1.7 | `Hero.ts`: 6 classes, stats, level, XP | ✅ | HeroClass enum, level-up bonuses, STR caps |
@@ -41,7 +41,7 @@ Port **Shattered Pixel Dungeon** (1,277 Java files, v3.3.5) from Java/LibGDX →
 | 1.14 | Tile rendering system | ✅ | DungeonTileSheet, Tilemap Sprite-based, DungeonRenderer |
 | 1.15 | Water rendering (SkinnedBlock UV scroll) | ✅ | PixiJS TilingSprite with animated Y-UV scroll |
 | 1.16 | Terrain features (plants, traps, high grass) | 🔲 | |
-| 1.17 | Hero/mob sprite rendering on tilemap | ✅ | CharSprite, HeroSprite, MobSprite base + Rat/Slime sprites |
+| 1.17 | Hero/mob sprite rendering on tilemap | ✅ | CharSprite, HeroSprite, MobSprite base + 8 mob sprite classes (Rat, Slime, Gnoll, Snake, Crab, Swarm, Goo, Hero) |
 | 1.18 | Smooth movement: sprite slides 100ms + camera follows | ✅ | `startMove/updateMove`, `isBusy` input lock, smooth pan |
 | 1.19 | Crisp rendering: nearest-neighbor × roundPixels × hi-DPI text | ✅ | 4x nearest, `roundPixels:true`, `textResolution = SCALE × DPR` |
 | 1.20 | ViewportManager refactoring (singleton → dependency) | ✅ | No singletons, ResizeObserver, safe-area insets, integer+frac scale |
@@ -51,7 +51,7 @@ Port **Shattered Pixel Dungeon** (1,277 Java files, v3.3.5) from Java/LibGDX →
 
 | # | Task | Priority | Status |
 |---|------|----------|--------|
-| A1 | Wire mob variety in SewerLevel (Gnoll, Crab, Swarm) | High | 🔲 |
+| A1 | Wire mob variety in SewerLevel (Gnoll, Crab, Swarm, Snake, Slime) — classes exist, createMob() only returns Rat | High | 🔲 |
 | A2 | Item pickup on step-over (heap detection → collect) | High | ✅ |
 | A3 | WndBag interactive inventory (equip/use/drop via UI) | High | ✅ |
 | A4 | SewerBossLevel + Goo boss | Medium | 🔲 |
@@ -85,22 +85,21 @@ Port **Shattered Pixel Dungeon** (1,277 Java files, v3.3.5) from Java/LibGDX →
 
 | # | Task | Status |
 |---|------|--------|
-| 3.1 | Special rooms (10/24: Shop, Pool, Garden, Lab, Pit, WeakFloor, MagicWell, Traps, Statue, Vault) | ✅ (w/ stubs) |
+| 3.1 | Special rooms (10/24: Shop, Pool, Garden, Lab, Pit, WeakFloor, MagicWell, Traps, Statue, Vault) | ✅ |
 | 3.2 | Standard room subtypes (~40) | 🔲 |
 | 3.3 | Connection room subtypes (7) | 🔲 |
 | 3.4 | Level types (Prison, Caves, City, Halls) | 🔲 (SewerLevel only) |
 | 3.5 | Boss levels (5) | 🔲 |
 | 3.6 | Traps system | 🔲 |
 | 3.7 | Shops + shopOnLevel | 🔲 |
-| 3.8 | Enemy variety (85 types, 2 active: Rat, Slime) | 🔲 |
-| 3.9 | Mob sprites ported but unwired: Gnoll, Crab, Swarm, Snake, Albino, Goo | — |
+| 3.8 | Enemy variety (85 types, 7 sewer mob classes ported, 2 wired: Rat, Slime) | 🔲 | Gnoll, Crab, Swarm, Snake, Goo classes exist but not spawned |
 
 ## Phase 4: Advanced Systems
 
 | # | Task | Status |
 |---|------|--------|
 | 4.1 | Buff system base (Buff, FlavourBuff, CounterBuff, ShieldBuff, AllyBuff) | ✅ |
-| 4.2 | Concrete buffs (15/87: Burning, Frost, Chill, Poison, Paralysis, Haste, Invisibility, Levitation, MindVision, Bless, Amok, Terror, MagicalSleep, Hunger, Regeneration) | 🔲 (15/87) |
+| 4.2 | Concrete buffs (20/87: Burning, Frost, Chill, Poison, Paralysis, Haste, Invisibility, Levitation, MindVision, Bless, Amok, Terror, MagicalSleep, Hunger, Regeneration, AllyBuff, CounterBuff, ShieldBuff, FlavourBuff) | 🔲 (20/87) |
 | 4.3 | Blob system (22 types) | 🔲 |
 | 4.4 | Quests, NPCs | 🔲 |
 | 4.5 | Talents | 🔲 |
@@ -140,7 +139,9 @@ npm run build → success
 npm run test:e2e → 6/6 pass
 ```
 
-**What's playable:** Hero walks with WASD/arrows, fights Rats/Slimes in Sewers, fog-of-war, smooth camera, item spawning, HUD with health/inventory button, interactive inventory (open bag → view items → equip/use/drop), item pickup on step-over.
+**What's playable:** Hero walks with WASD/arrows, fights Rats in Sewers (5 other mob types ported but not spawned), fog-of-war, smooth camera, item spawning (potions, scrolls, wands, rings, food, gold), HUD with health/inventory button, interactive inventory (open bag → view items → equip/use/drop), item pickup on step-over.
+
+**Porting state of all 7 Sewer mobs:** All classes (Rat, Gnoll, Crab, Slime, Snake, Swarm, Goo) and their sprites are fully implemented. 20/87 buffs ported. 3 melee weapons, 2 armor types, 12 potions, 12 scrolls, wand-of-MM, 2 rings, food base.
 
 ---
 
@@ -176,10 +177,15 @@ app.stage (PixiJS v8 Application)
 
 ## Next Steps (Phase A Order)
 
-1. **A1** — Wire Gnoll, Crab, Swarm into SewerLevel.createMobs() with depth-based probabilities
-2. **A4** — SewerBossLevel: boss arena + Goo boss placement
-3. **A5** — PrisonLevel port: painter, rooms, depth 6-10
-4. **A6** — Interactable tiles: doors, traps, wells, high grass
+Sewer mob classes (Rat, Gnoll, Crab, Slime, Snake, Swarm, Goo) and all mob sprites are fully ported — just not wired.
+
+1. **A1** — Wire all 7 mob types into SewerLevel.createMobs() with depth-based probability table
+2. **Wire mob sprites in GameScene** — load textures + instantiate correct sprite classes per mob type
+3. **A4** — SewerBossLevel: boss arena + Goo boss placement on depth 5
+4. **Mob loot drops** — wire Mob.createLoot() into Mob.die()
+5. **Fix Albino bleeding** — uncomment Bleeding buff in Albino.attackProc()
+6. **A6** — Interactable tiles: doors, traps, wells, high grass
+7. **A5** — PrisonLevel port: painter, rooms, depth 6-10
 
 ---
 

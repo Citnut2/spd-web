@@ -1,12 +1,12 @@
-import { Container, Graphics, Assets, Sprite, Texture, Rectangle } from 'pixi.js';
+import { Container, Assets, Sprite, Texture, Rectangle } from 'pixi.js';
 import { makeText } from './text';
 import { Hero } from '../core/hero/Hero';
 import { Dungeon } from '../core/levels/Dungeon';
 import { BuffIndicator } from './BuffIndicator';
 
 const PAD = 2;
-export const STATUS_PANEL_WIDTH = 96;
-export const STATUS_PANEL_HEIGHT = 48;
+export const STATUS_PANEL_WIDTH = 82;
+export const STATUS_PANEL_HEIGHT = 38;
 
 const PORTRAIT_MAP: Record<string, number> = {
   WARRIOR: 0, MAGE: 1, ROGUE: 2,
@@ -16,16 +16,14 @@ const PORTRAIT_MAP: Record<string, number> = {
 export class StatusPane extends Container {
   private hero: Hero | null;
 
-  private avatar: Container;
-  private hpFill: Graphics;
-  private expFill: Graphics;
+  private hpBar: Sprite;
+  private shieldBar: Sprite;
+  private expBar: Sprite;
   private hpText: ReturnType<typeof makeText>;
   private expText: ReturnType<typeof makeText>;
   private levelText: ReturnType<typeof makeText>;
   private depthText: ReturnType<typeof makeText>;
-  private nameText: ReturnType<typeof makeText>;
   private buffIndicator: BuffIndicator;
-
   private heroPortrait: Sprite | null = null;
   private iconTexture: Texture | null = null;
 
@@ -34,28 +32,28 @@ export class StatusPane extends Container {
     this.hero = hero;
     this.eventMode = 'none';
 
-    const bg = new Graphics();
-    bg.rect(0, 0, STATUS_PANEL_WIDTH, STATUS_PANEL_HEIGHT);
-    bg.fill({ color: 0x111111, alpha: 0.88 });
-    bg.stroke({ color: 0x888888, width: 1 });
-    this.addChild(bg);
+    const statusTex = Assets.get('assets/interfaces/status_pane.png') as Texture | undefined;
+    if (statusTex) {
+      const bg = new Sprite(new Texture({ source: statusTex.source, frame: new Rectangle(0, 0, 82, 38) }));
+      this.addChild(bg);
+    }
 
-    this.avatar = new Container();
-    this.addChild(this.avatar);
+    this.shieldBar = new Sprite();
+    this.shieldBar.visible = false;
+    this.addChild(this.shieldBar);
 
-    this.hpFill = new Graphics();
-    this.addChild(this.hpFill);
+    this.hpBar = new Sprite();
+    this.addChild(this.hpBar);
 
-    this.expFill = new Graphics();
-    this.addChild(this.expFill);
+    this.expBar = new Sprite();
+    this.addChild(this.expBar);
 
-    this.hpText = makeText({ text: '', size: 5, fill: '#ffffff' });
+    this.hpText = makeText({ text: '', size: 4, fill: '#ffffff' });
     this.expText = makeText({ text: '', size: 4, fill: '#ffffaa' });
-    this.levelText = makeText({ text: '', size: 5, fill: '#ffff00' });
-    this.depthText = makeText({ text: '', size: 4, fill: '#888888' });
-    this.nameText = makeText({ text: '', size: 5, fill: '#ffffff' });
+    this.levelText = makeText({ text: '', size: 5, fill: '#ffffaa' });
+    this.depthText = makeText({ text: '', size: 4, fill: '#CACFC2' });
 
-    this.addChild(this.hpText, this.expText, this.levelText, this.depthText, this.nameText);
+    this.addChild(this.hpText, this.expText, this.levelText, this.depthText);
 
     this.buffIndicator = new BuffIndicator(hero);
     this.addChild(this.buffIndicator);
@@ -68,90 +66,94 @@ export class StatusPane extends Container {
     try {
       const tex = await Assets.load('assets/interfaces/hero_icons.png');
       this.iconTexture = tex;
-      const idx = PORTRAIT_MAP[this.hero?.heroClass ?? 'WARRIOR'] ?? 0;
+      this.updatePortrait();
+    } catch {
+      // fallback handled in refresh
+    }
+  }
+
+  private updatePortrait(): void {
+    if (!this.iconTexture || !this.hero) return;
+    const idx = PORTRAIT_MAP[this.hero.heroClass] ?? 0;
+    if (this.heroPortrait) {
+      this.heroPortrait.texture = new Texture({
+        source: this.iconTexture.source,
+        frame: new Rectangle(idx * 16, 0, 16, 16),
+      });
+    } else {
       this.heroPortrait = new Sprite(
         new Texture({
-          source: tex.source,
+          source: this.iconTexture.source,
           frame: new Rectangle(idx * 16, 0, 16, 16),
         }),
       );
-      this.heroPortrait.x = 3;
-      this.heroPortrait.y = 3;
-      this.addChild(this.heroPortrait);
-    } catch {
-      const fallback = new Graphics();
-      fallback.rect(2, 2, 16, 16);
-      fallback.fill({ color: 0x886644 });
-      this.addChild(fallback);
+      this.heroPortrait.x = 2;
+      this.heroPortrait.y = 2;
+      this.addChildAt(this.heroPortrait, 1);
     }
-    this.refresh();
   }
 
   refresh(): void {
     const h = this.hero;
     if (!h) return;
 
-    const portraitW = 16;
+    const portraitW = 18;
+    const barX = portraitW + 2;
+    const barW = STATUS_PANEL_WIDTH - barX - PAD;
+    const max = h.HT || 1;
 
-    // HP bar
-    const hpRatio = h.HT > 0 ? h.HP / h.HT : 0;
-    const hpBarX = portraitW + 6;
-    const hpBarY = 2;
-    const hpBarW = STATUS_PANEL_WIDTH - hpBarX - PAD;
-    const hpBarH = 6;
+    const health = h.HP;
+    const shield = (h as any).shielding ? (h as any).shielding() : 0;
+    const healthPct = Math.min(1, health / max);
+    const shieldPct = Math.min(1, shield / max);
 
-    this.hpFill.clear();
-    this.hpFill.rect(hpBarX, hpBarY, Math.max(1, Math.round(hpBarW * hpRatio)), hpBarH);
-    const hpColor = hpRatio > 0.3 ? 0x00cc00 : hpRatio > 0.1 ? 0xccaa00 : 0xcc0000;
-    this.hpFill.fill({ color: hpColor });
+    const statusTex = Assets.get('assets/interfaces/status_pane.png') as Texture | undefined;
+    if (statusTex) {
+      this.hpBar.texture = new Texture({ source: statusTex.source, frame: new Rectangle(0, 40, 50, 4) });
+      this.hpBar.x = barX;
+      this.hpBar.y = 2;
+      this.hpBar.scale.x = (barW / 50) * healthPct;
+      this.hpBar.scale.y = 1;
 
-    // HP text
-    this.hpText.text = `${h.HP}/${h.HT}`;
-    this.hpText.x = hpBarX + hpBarW / 2 - this.hpText.width / 2;
-    this.hpText.y = hpBarY + hpBarH / 2 - this.hpText.height / 2;
+      if (shield > 0) {
+        this.shieldBar.texture = new Texture({ source: statusTex.source, frame: new Rectangle(0, 44, 50, 4) });
+        this.shieldBar.x = barX;
+        this.shieldBar.y = 2;
+        this.shieldBar.scale.x = (barW / 50) * (healthPct + shieldPct);
+        this.shieldBar.scale.y = 1;
+        this.shieldBar.visible = true;
+      } else {
+        this.shieldBar.visible = false;
+      }
 
-    // XP bar
+      this.expBar.texture = new Texture({ source: statusTex.source, frame: new Rectangle(0, 48, 17, 4) });
+      this.expBar.x = barX;
+      this.expBar.y = 2 + 4 + 2 + 16;
+    }
+
+    this.hpText.text = shield > 0 ? `${health}+${shield}/${h.HT}` : `${health}/${h.HT}`;
+    this.hpText.x = barX + 1;
+    this.hpText.y = 2;
+
     const expRatio = h.maxExp > 0 ? h.exp / h.maxExp : 0;
-    const expBarY = hpBarY + hpBarH + 2;
-    this.expFill.clear();
-    this.expFill.rect(hpBarX, expBarY, Math.max(1, Math.round(hpBarW * expRatio)), 4);
-    this.expFill.fill({ color: 0x4488ff });
-
+    this.expBar.scale.x = expRatio;
     this.expText.text = `${h.exp}/${h.maxExp}`;
-    this.expText.x = hpBarX + hpBarW / 2 - this.expText.width / 2;
-    this.expText.y = expBarY + 2 - this.expText.height / 2;
+    this.expText.x = barX + 1;
+    this.expText.y = 2 + 4 + 2 + 16;
 
-    // Level
-    this.levelText.text = `Lv.${h.lvl}`;
-    this.levelText.x = hpBarX;
-    this.levelText.y = expBarY + 6;
+    this.levelText.text = `Lv ${h.lvl}`;
+    this.levelText.x = barX + STATUS_PANEL_WIDTH - barX - PAD - 30;
+    this.levelText.y = 2 + 4 + 2 + 16 + 2;
 
-    // Name
-    const heroClassStr = String(h.heroClass);
-    this.nameText.text = heroClassStr.charAt(0) + heroClassStr.slice(1).toLowerCase();
-    this.nameText.x = hpBarX + 32;
-    this.nameText.y = expBarY + 6;
-
-    // Depth
     this.depthText.text = `D:${Dungeon.depth}`;
-    this.depthText.x = hpBarX + 56;
-    this.depthText.y = expBarY + 6;
+    this.depthText.x = barX + STATUS_PANEL_WIDTH - barX - PAD - 30;
+    this.depthText.y = 2 + 4 + 2 + 16 + 2 + 8;
 
-    // Buffs
-    this.buffIndicator.x = portraitW + 4;
-    this.buffIndicator.y = expBarY + 14;
+    this.buffIndicator.x = barX;
+    this.buffIndicator.y = 2 + 4 + 2;
     this.buffIndicator.refresh();
 
-    // Portrait frame
-    const portrait = this.heroPortrait;
-    const iconTex = this.iconTexture;
-    if (portrait && iconTex) {
-      const idx = PORTRAIT_MAP[h.heroClass] ?? 0;
-      portrait.texture = new Texture({
-        source: iconTex.source,
-        frame: new Rectangle(idx * 16, 0, 16, 16),
-      });
-    }
+    this.updatePortrait();
   }
 
   setHero(hero: Hero | null): void {

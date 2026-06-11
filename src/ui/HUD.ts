@@ -1,8 +1,9 @@
 import { Container } from 'pixi.js';
-import { StatusPane, STATUS_PANEL_HEIGHT } from './StatusPane';
+import { StatusPane } from './StatusPane';
 import { GameLog } from './GameLog';
-import { Toolbar, TOOLBAR_WIDTH } from './Toolbar';
-import { InventoryPanel, INVENTORY_PANEL_WIDTH, INVENTORY_PANEL_HEIGHT } from './InventoryPanel';
+import { Toolbar, TOOLBAR_WIDTH, TOOLBAR_HEIGHT } from './Toolbar';
+import { InventoryPanel, INVENTORY_PANEL_HEIGHT } from './InventoryPanel';
+import { MenuPane, MENU_PANE_WIDTH } from './MenuPane';
 import { GLog } from './GLog';
 import type { Hero } from '../core/hero/Hero';
 import type { ViewportManager } from '../core/engine/ViewportManager';
@@ -15,49 +16,74 @@ export class HUD {
   readonly gameLog: GameLog;
   readonly toolbar: Toolbar;
   readonly inventoryPanel: InventoryPanel;
+  readonly menuPane: MenuPane;
+  readonly toolbarGroup: Container;
 
   private hero: Hero | null;
 
-  constructor(hero: Hero | null) {
+  constructor(hero: Hero | null, onOpenMenu: () => void) {
     this.container = new Container();
     this.container.eventMode = 'static';
     this.container.label = 'hud';
-
     this.hero = hero;
 
+    this.menuPane = new MenuPane(onOpenMenu);
     this.statusPane = new StatusPane(hero);
     this.gameLog = new GameLog();
     this.toolbar = new Toolbar();
     this.inventoryPanel = new InventoryPanel(hero);
 
+    this.toolbarGroup = this.createToolbarGroup();
+
+    this.container.addChild(this.menuPane);
     this.container.addChild(this.statusPane);
     this.container.addChild(this.gameLog);
-    this.container.addChild(this.toolbar);
-    this.container.addChild(this.inventoryPanel);
+    this.container.addChild(this.toolbarGroup);
 
     GLog.add('Welcome to the dungeon...');
     GLog.add('@@Use arrows or WASD to move');
+  }
+
+  private createToolbarGroup(): Container {
+    const grp = new Container();
+    grp.label = 'toolbarGroup';
+
+    this.toolbar.x = 0;
+    this.toolbar.y = 0;
+    grp.addChild(this.toolbar);
+
+    this.inventoryPanel.x = 0;
+    this.inventoryPanel.y = TOOLBAR_HEIGHT;
+    grp.addChild(this.inventoryPanel);
+
+    return grp;
   }
 
   positionElements(vm: ViewportManager): void {
     const vw = vm.viewportWidth;
     const vh = vm.viewportHeight;
 
-    // Hero panel: bottom-left
+    this.menuPane.x = vw - MENU_PANE_WIDTH - HUD_MARGIN;
+    this.menuPane.y = HUD_MARGIN;
+    this.menuPane.refresh();
+
     this.statusPane.x = HUD_MARGIN;
-    this.statusPane.y = vh - STATUS_PANEL_HEIGHT - HUD_MARGIN;
+    this.statusPane.y = HUD_MARGIN;
 
-    // Message log: above hero panel
     this.gameLog.x = HUD_MARGIN;
-    this.gameLog.y = this.statusPane.y - 2;
+    this.gameLog.y = vh - TOOLBAR_HEIGHT - 28 - HUD_MARGIN;
 
-    // Inventory panel: bottom-right
-    this.inventoryPanel.x = vw - INVENTORY_PANEL_WIDTH - HUD_MARGIN;
-    this.inventoryPanel.y = vh - INVENTORY_PANEL_HEIGHT - HUD_MARGIN;
+    this.toolbarGroup.x = vw - TOOLBAR_WIDTH - HUD_MARGIN;
+    this.toolbarGroup.y = vh - TOOLBAR_HEIGHT - INVENTORY_PANEL_HEIGHT - HUD_MARGIN;
+  }
 
-    // Toolbar: top-right
-    this.toolbar.x = vw - TOOLBAR_WIDTH - HUD_MARGIN;
-    this.toolbar.y = HUD_MARGIN;
+  setToolbarCallbacks(opts: {
+    onWait?: () => void;
+    onSearch?: () => void;
+    onInventory?: () => void;
+    onQuickSlot?: (item: any) => void;
+  }): void {
+    this.toolbar.setCallbacks(opts);
   }
 
   setHero(hero: Hero | null, vm?: ViewportManager): void {
@@ -72,6 +98,7 @@ export class HUD {
       this.statusPane.refresh();
       this.inventoryPanel.refresh();
     }
+    this.menuPane.refresh();
   }
 
   update(): void {
@@ -80,5 +107,6 @@ export class HUD {
 
   setEnabled(_enabled: boolean): void {
     this.container.eventMode = _enabled ? 'static' : 'none';
+    this.toolbar.setEnabled(_enabled);
   }
 }

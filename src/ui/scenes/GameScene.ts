@@ -19,6 +19,11 @@ import { GLog } from '../GLog';
 import { PathFinder } from '../../core/utils/PathFinder';
 import { WndBag } from '../windows/WndBag';
 import { setDropItem } from '../../core/items/Item';
+import { Toolbar } from '../Toolbar';
+import { Door, setDoorCallbacks } from '../../core/levels/features/Door';
+import { setHighGrassCallbacks } from '../../core/levels/features/HighGrass';
+import { setTrapCallbacks } from '../../core/levels/traps/Trap';
+import { setLevelGlobals } from '../../core/levels/Level';
 
 export class GameScene extends Scene {
   private cameraRef: Camera | null = null;
@@ -72,6 +77,8 @@ export class GameScene extends Scene {
       await Assets.load(waterPath);
     }
 
+    await Toolbar.preload();
+
     const [heroTex, ratTex, slimeTex] = await Promise.all([
       Assets.load('assets/sprites/warrior.png'),
       Assets.load('assets/sprites/rat.png'),
@@ -81,6 +88,34 @@ export class GameScene extends Scene {
     this.dungeonRenderer = new DungeonRenderer(this.cameraRef);
     await this.dungeonRenderer.loadTileSheet('assets/environment/tiles_sewers.png');
     this.dungeonRenderer.setLevel(lvl);
+
+    const onTileChanged = (pos: number) => {
+      this.dungeonRenderer?.updateCell(pos);
+    };
+
+    setDoorCallbacks({
+      onTileChanged,
+      onObserve: () => { if (Dungeon.hero) Dungeon.observe(); },
+      getHeroPos: () => Dungeon.hero?.pos ?? null,
+    });
+
+    setHighGrassCallbacks({ onTileChanged });
+
+    setTrapCallbacks({
+      onTileChanged,
+      onDisarm: (pos: number, terrain: number) => {
+        const lvl = Dungeon.level;
+        if (!lvl) return;
+        lvl.map[pos] = terrain;
+        lvl.updateFlags();
+        onTileChanged(pos);
+      },
+    });
+
+    setLevelGlobals({
+      heroInterrupt: () => { if (Dungeon.hero) Dungeon.hero.interrupt(); },
+      isHeroAt: (pos: number) => Dungeon.hero?.pos === pos,
+    });
 
     // Add dungeon renderer to world container (under camera)
     this.worldContainer.addChild(this.dungeonRenderer.container);
@@ -122,11 +157,14 @@ export class GameScene extends Scene {
     });
 
     // Create HUD and add to HUD container (not under camera)
-    this.hud = new HUD(hero);
+    this.hud = new HUD(hero, () => {
+      // Menu button pressed — open game menu (stub)
+      GLog.add('@@Menu opened');
+    });
     this.hud.positionElements(this.spdGame.viewport);
     this.hudContainer.addChild(this.hud.container);
 
-    this.hud.inventoryPanel.setCallbacks({
+    this.hud.setToolbarCallbacks({
       onWait: () => {
         const h = Dungeon.hero;
         if (!h || !h.isAlive()) return;
@@ -141,7 +179,6 @@ export class GameScene extends Scene {
         if (!h) return;
         const vm = this.spdGame!.viewport;
         const wnd = new WndBag(h);
-        // Center in overlay space
         wnd.x = Math.round((vm.viewportWidth - WndBag.WIDTH) / 2);
         wnd.y = Math.round((vm.viewportHeight - WndBag.HEIGHT) / 2);
         this.overlayContainer!.addChild(wnd);
@@ -151,6 +188,11 @@ export class GameScene extends Scene {
       },
       onSearch: () => {
         GLog.add('@@Searching...');
+      },
+      onQuickSlot: (item) => {
+        const h = Dungeon.hero;
+        if (!h || !h.isAlive()) return;
+        item.execute(h);
       },
     });
 
@@ -224,7 +266,9 @@ export class GameScene extends Scene {
           }
         }
       } else {
+        Door.leave(oldPos, level);
         hero.moveTo(target);
+        level.occupyCell(hero);
         this.heroSprite?.startMove(oldPos, hero.pos, this.mapWidth, () => {
           this.onMoveComplete(hero);
         });
@@ -311,7 +355,9 @@ export class GameScene extends Scene {
     }
 
     const oldPos = hero.pos;
+    Door.leave(oldPos, level);
     hero.moveTo(next);
+    level.occupyCell(hero);
     this.heroSprite?.startMove(oldPos, hero.pos, this.mapWidth, () => {
       this.moveAlongPath(hero, level);
     });

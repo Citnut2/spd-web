@@ -1,24 +1,3 @@
-/*
- * Pixel Dungeon
- * Copyright (C) 2012-2015 Oleg Dolya
- *
- * Shattered Pixel Dungeon
- * Copyright (C) 2014-2025 Evan Debenham
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>
- */
-
 import { Terrain, isPassable, isSolid, isLosBlocking, isAvoid } from './Terrain';
 import { Actor } from '../actors/Actor';
 import { Char } from '../actors/Char';
@@ -27,9 +6,23 @@ import { Point, cellToPoint as geomCellToPoint, pointToCell as geomPointToCell }
 import { element } from '../utils/Random';
 import { Heap, setRemoveHeap } from '../items/Heap';
 import type { Item } from '../items/Item';
+import { GLog } from '../../ui/GLog';
+import { Door } from './features/Door';
+import { HighGrass } from './features/HighGrass';
+import type { Trap } from './traps/Trap';
+
+let _heroInterrupt: (() => void) | null = null;
+let _isHeroAt: ((pos: number) => boolean) | null = null;
+
+export function setLevelGlobals(opts: {
+  heroInterrupt: () => void;
+  isHeroAt: (pos: number) => boolean;
+}): void {
+  _heroInterrupt = opts.heroInterrupt;
+  _isHeroAt = opts.isHeroAt;
+}
 
 export abstract class Level {
-  // Feeling constants
   static readonly FEELING_NONE = 0;
   static readonly FEELING_CHASM = 1;
   static readonly FEELING_LARGE = 2;
@@ -60,13 +53,14 @@ export abstract class Level {
 
   mobs: Actor[] = [];
 
-  // Level generation fields
   feeling = Level.FEELING_NONE;
   heaps: Map<number, Heap> = new Map();
   itemsToSpawn: any[] = [];
   color1 = 0;
   color2 = 0;
   openSpace: boolean[] = [];
+
+  traps: Map<number, Trap> = new Map();
 
   constructor() {
     this.map = new Array(this.length).fill(Terrain.WALL);
@@ -77,7 +71,58 @@ export abstract class Level {
   abstract build(): boolean;
   abstract createMob(): Char | null;
 
-  occupyCell(_ch: Char): void {
+  occupyCell(ch: Char): void {
+    this.pressCell(ch.pos, true);
+  }
+
+  pressCell(cell: number, hard: boolean): void {
+    const tile = this.map[cell]!;
+    let trap: Trap | undefined;
+
+    switch (tile) {
+      case Terrain.SECRET_TRAP:
+        if (hard) {
+          trap = this.traps.get(cell);
+          this.discover(cell);
+          GLog.add('@@You notice a trap!');
+        }
+        break;
+      case Terrain.TRAP:
+        trap = this.traps.get(cell);
+        break;
+      case Terrain.HIGH_GRASS:
+      case Terrain.FURROWED_GRASS:
+        HighGrass.trample(this, cell);
+        break;
+      case Terrain.DOOR:
+        Door.enter(cell, this);
+        break;
+      case Terrain.WELL:
+        if (_isHeroAt && _isHeroAt(cell)) {
+          GLog.add('@@You are standing on a well.');
+        }
+        break;
+    }
+
+    if (trap && trap.active) {
+      if (_heroInterrupt && _isHeroAt && _isHeroAt(cell)) {
+        _heroInterrupt();
+      }
+      trap.trigger();
+    }
+  }
+
+  discover(cell: number): void {
+    const tile = this.map[cell]!;
+    if (tile === Terrain.SECRET_TRAP) {
+      this.map[cell] = Terrain.TRAP;
+      this.updateFlags();
+      const trap = this.traps.get(cell);
+      if (trap) trap.reveal();
+    } else if (tile === Terrain.SECRET_DOOR) {
+      this.map[cell] = Terrain.DOOR;
+      this.updateFlags();
+    }
   }
 
   drop(item: Item, cell: number): Heap {
@@ -95,6 +140,8 @@ export abstract class Level {
     setRemoveHeap((pos: number) => {
       this.heaps.delete(pos);
     });
+
+    this.traps.clear();
 
     this.build();
     this.cleanWalls();
@@ -226,8 +273,12 @@ export abstract class Level {
     return null;
   }
 
-  setTrap(_trap: any, _pos: number): void {
-    // stub: trap system not yet ported
+  setTrap(trap: Trap, pos: number): Trap {
+    const existing = this.traps.get(pos);
+    if (existing) this.traps.delete(pos);
+    trap.pos = pos;
+    this.traps.set(pos, trap);
+    return trap;
   }
 
   tunnelTile(): number {
@@ -245,7 +296,6 @@ export abstract class Level {
   }
 
   mobLimit(): number {
-    // default mob limit, subclasses may override
     return 10;
   }
 

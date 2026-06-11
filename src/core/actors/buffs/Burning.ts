@@ -38,6 +38,10 @@ export class Burning extends Buff {
     this.burnIncrement = bundle.getInt(Burning.BURN);
   }
 
+  set(duration: number): void {
+    this.left = Math.max(duration, this.left);
+  }
+
   override attachTo(target: Char): boolean {
     Buff.detach(target, Chill);
     return super.attachTo(target);

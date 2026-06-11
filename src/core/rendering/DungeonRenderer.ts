@@ -103,6 +103,11 @@ export class DungeonRenderer {
     this.wallsLayer.map(level.map, level.width);
   }
 
+  updateCell(pos: number): void {
+    this.terrainLayer?.updateMapCell(pos);
+    this.wallsLayer?.updateMapCell(pos);
+  }
+
   update(dt: number): void {
     if (this.waterLayer) {
       this.waterLayer.update(dt);
