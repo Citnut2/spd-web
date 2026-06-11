@@ -1,6 +1,6 @@
 import { Graphics } from 'pixi.js';
 import { Scene } from '../Scene';
-import { Renderer } from '../../core/engine/Renderer';
+import { ViewportManager } from '../../core/engine/ViewportManager';
 import { makeText } from '../text';
 
 const CLASSES = ['WARRIOR', 'MAGE', 'ROGUE', 'HUNTRESS', 'DUELIST', 'CLERIC'];
@@ -9,8 +9,8 @@ export class HeroSelectScene extends Scene {
   private selectedClass = 'WARRIOR';
 
   async create(): Promise<void> {
-    const W = Renderer.VIRTUAL_WIDTH;
-    const H = Renderer.VIRTUAL_HEIGHT;
+    const W = ViewportManager.BASE_WIDTH;
+    const H = ViewportManager.BASE_HEIGHT;
 
     // ── Background ──
     const bg = new Graphics();

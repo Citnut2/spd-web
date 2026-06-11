@@ -3,7 +3,7 @@ import { Scene } from './Scene';
 import { TitleScene } from './scenes/TitleScene';
 import { HeroSelectScene } from './scenes/HeroSelectScene';
 import { GameScene } from './scenes/GameScene';
-import { Camera } from '../core/engine/Camera';
+import { SPDGame } from '../core/engine/SPDGame';
 
 const SCENE_REGISTRY: Record<string, new () => Scene> = {
   title: TitleScene,
@@ -12,14 +12,14 @@ const SCENE_REGISTRY: Record<string, new () => Scene> = {
 };
 
 export class SceneManager {
-  readonly root: Container;
+  readonly worldLayer: Container;
+  readonly uiLayer: Container;
   private current: Scene | null = null;
   private currentKey: string | null = null;
-  private camera: Camera;
 
-  constructor(root: Container, camera: Camera) {
-    this.root = root;
-    this.camera = camera;
+  constructor(game: SPDGame) {
+    this.worldLayer = game.worldLayer;
+    this.uiLayer = game.uiLayer;
   }
 
   async switchTo(key: string): Promise<void> {
@@ -28,7 +28,7 @@ export class SceneManager {
     // Destroy current scene
     if (this.current) {
       this.current.destroy();
-      this.root.removeChildren();
+      this.worldLayer.removeChildren();
     }
 
     // Create new scene
@@ -41,12 +41,7 @@ export class SceneManager {
     this.current = new SceneClass();
     this.currentKey = key;
 
-    // Inject dependencies
-    if (this.current instanceof GameScene) {
-      this.current.setCamera(this.camera);
-    }
-
-    this.root.addChild(this.current.container);
+    this.worldLayer.addChild(this.current.container);
     await this.current.create();
   }
 

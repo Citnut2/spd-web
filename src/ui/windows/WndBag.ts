@@ -1,7 +1,4 @@
 // SPDX-License-Identifier: GPL-3.0-only
-// This file is part of spd-clone, a port of Shattered Pixel Dungeon.
-// See <https://github.com/anomalyco/spd-clone> for copying permission.
-//
 // Port of com.shatteredpixel.shatteredpixeldungeon.ui.Window + WndBag
 
 import { Container, Graphics, Text, TextStyle } from 'pixi.js';
@@ -59,7 +56,7 @@ export class WndBag extends Container {
     const belongings = this.hero.belongings;
 
     const addItem = (label: string, item: Item | null) => {
-      const name = item ? item.name() : `[empty]`;
+      const name = item ? item.name() : '[empty]';
       const color = item ? '#aaaaaa' : '#555555';
       const t = new Text({
         text: `${label}: ${name}`,

@@ -16,7 +16,7 @@ import { Game } from '../../core/engine/Game';
 import { HUD } from '../HUD';
 import { GLog } from '../GLog';
 import { PathFinder } from '../../core/utils/PathFinder';
-import { Renderer } from '../../core/engine/Renderer';
+import { ViewportManager } from '../../core/engine/ViewportManager';
 import { WndBag } from '../windows/WndBag';
 
 export class GameScene extends Scene {
@@ -97,7 +97,7 @@ export class GameScene extends Scene {
 
     this.spdGame = Game.instance as SPDGame;
     this.hud = new HUD(hero);
-    this.spdGame.hudLayer.addChild(this.hud.container);
+    this.spdGame.uiLayer.addChild(this.hud.container);
 
     this.hud.toolbar.setCallbacks({
       onWait: () => {
@@ -113,8 +113,8 @@ export class GameScene extends Scene {
         const h = Dungeon.hero;
         if (!h) return;
         const wnd = new WndBag(h);
-        wnd.x = (Renderer.VIRTUAL_WIDTH - WndBag.WIDTH) / 2;
-        wnd.y = (Renderer.VIRTUAL_HEIGHT - WndBag.HEIGHT) / 2;
+        wnd.x = (ViewportManager.BASE_WIDTH - WndBag.WIDTH) / 2;
+        wnd.y = (ViewportManager.BASE_HEIGHT - WndBag.HEIGHT) / 2;
         this.container.addChild(wnd);
       },
       onSearch: () => {
@@ -217,7 +217,7 @@ export class GameScene extends Scene {
       const hero = Dungeon.hero;
       if (!level || !hero || !this.cameraRef) return;
 
-      const cell = this.cameraRef.screenToCell(e.globalX, e.globalY, Renderer.SCALE, this.mapWidth);
+      const cell = this.cameraRef.screenToCell(e.globalX, e.globalY, this.mapWidth);
       if (cell < 0 || cell >= level.length) return;
 
       this.handleCellClick(cell, hero, level);
@@ -324,7 +324,7 @@ export class GameScene extends Scene {
       window.removeEventListener('keydown', this._keyHandler);
     }
     if (this.hud) {
-      this.spdGame?.hudLayer.removeChild(this.hud.container);
+      this.spdGame?.uiLayer.removeChild(this.hud.container);
       this.hud = null;
     }
     this.mobSprites = [];

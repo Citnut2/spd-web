@@ -5,7 +5,7 @@ import { Toolbar } from './Toolbar';
 import { BuffIndicator } from './BuffIndicator';
 import { GLog } from './GLog';
 import { Hero } from '../core/hero/Hero';
-import { Renderer } from '../core/engine/Renderer';
+import { ViewportManager } from '../core/engine/ViewportManager';
 
 export class HUD {
   readonly container: Container;
@@ -38,7 +38,7 @@ export class HUD {
   }
 
   private positionElements(): void {
-    const VH = Renderer.VIRTUAL_HEIGHT;
+    const VH = ViewportManager.BASE_HEIGHT;
 
     // StatusPane at top
     this.statusPane.x = 2;

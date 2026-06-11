@@ -1,5 +1,5 @@
 import { Text, TextStyle } from 'pixi.js';
-import { Renderer } from '../core/engine/Renderer';
+import { ViewportManager } from '../core/engine/ViewportManager';
 
 const FONT = 'PixelFont, monospace';
 
@@ -9,7 +9,11 @@ interface TextOptions {
   fill: string;
 }
 
-const TEXT_RES = Renderer.SCALE * Math.max(1, window.devicePixelRatio || 1);
+function getTextRes(): number {
+  const vm = ViewportManager.instance;
+  if (vm) return vm.textResolution;
+  return 4 * Math.max(1, window.devicePixelRatio || 1);
+}
 
 export function makeText(options: TextOptions): Text {
   const t = new Text({
@@ -21,8 +25,14 @@ export function makeText(options: TextOptions): Text {
     }),
   });
   (t as unknown as Record<string, unknown>)._autoResolution = false;
-  t.resolution = TEXT_RES;
+  t.resolution = getTextRes();
   return t;
+}
+
+export function refreshTextResolution(): void {
+  const res = getTextRes();
+  // Walk all Text objects and update resolution — not needed unless text is reused
+  // After this call, newly created Text objects will use the new resolution
 }
 
 export async function waitForFont(): Promise<void> {

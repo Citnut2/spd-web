@@ -32,4 +32,24 @@ export class SnakeSprite extends MobSprite {
     s.loop = true;
     s.animationSpeed = 3;
   }
+
+  idle(): void {
+    const s = this.animSprite;
+    if (s && this.idleFrames.length > 0) {
+      s.textures = this.idleFrames;
+      s.loop = true;
+      s.animationSpeed = 3;
+      s.play();
+    }
+  }
+
+  protected override playRun(): void {
+    const s = this.animSprite;
+    if (s && this.runFrames.length > 0) {
+      s.textures = this.runFrames;
+      s.loop = true;
+      s.animationSpeed = 2;
+      s.play();
+    }
+  }
 }

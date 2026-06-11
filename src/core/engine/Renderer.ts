@@ -1,27 +1,33 @@
-import { Application, Container } from 'pixi.js';
+import { Application, Container, TextureSource } from 'pixi.js';
+import { ViewportManager } from './ViewportManager';
 
 export class Renderer {
+  static instance: Renderer;
+
   readonly app: Application;
   readonly root: Container;
+  readonly viewport: ViewportManager;
 
-  static readonly VIRTUAL_WIDTH = 160;
-  static readonly VIRTUAL_HEIGHT = 144;
-  static readonly TILE_SIZE = 16;
-  static readonly SCALE = 4;
-
-  private scale = Renderer.SCALE;
+  private _initialized = false;
 
   constructor() {
+    Renderer.instance = this;
     this.app = new Application();
     this.root = new Container();
+    this.viewport = new ViewportManager();
   }
 
   async init(container: HTMLElement): Promise<void> {
+    if (this._initialized) return;
+    this._initialized = true;
+
+    const dpr = Math.max(1, window.devicePixelRatio || 1);
+
     await this.app.init({
-      width: Renderer.VIRTUAL_WIDTH * this.scale,
-      height: Renderer.VIRTUAL_HEIGHT * this.scale,
+      width: container.clientWidth || 640,
+      height: container.clientHeight || 480,
       backgroundColor: 0x000000,
-      resolution: window.devicePixelRatio || 1,
+      resolution: dpr,
       antialias: false,
       autoDensity: true,
       roundPixels: true,
@@ -29,42 +35,16 @@ export class Renderer {
     });
 
     container.appendChild(this.app.canvas as HTMLCanvasElement);
+    this.app.canvas.style.imageRendering = 'pixelated';
     this.app.stage.addChild(this.root);
-
-    this.root.scale.set(this.scale);
     this.root.eventMode = 'static';
 
-    this.app.canvas.style.imageRendering = 'pixelated';
-  }
-
-  get width(): number {
-    return Renderer.VIRTUAL_WIDTH;
-  }
-
-  get height(): number {
-    return Renderer.VIRTUAL_HEIGHT;
-  }
-
-  get zoom(): number {
-    return this.scale;
-  }
-
-  setZoom(z: number): void {
-    this.scale = Math.max(2, Math.min(8, Math.round(z)));
-    this.app.renderer.resize(
-      Renderer.VIRTUAL_WIDTH * this.scale,
-      Renderer.VIRTUAL_HEIGHT * this.scale
-    );
-  }
-
-  screenToVirtual(screenX: number, screenY: number): { x: number; y: number } {
-    return {
-      x: Math.floor(screenX / this.scale),
-      y: Math.floor(screenY / this.scale)
-    };
+    // ViewportManager monitors container size and handles resize
+    this.viewport.observe(container);
   }
 
   destroy(): void {
+    this.viewport.observe(null);
     this.app.destroy(true);
   }
 }

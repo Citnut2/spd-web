@@ -144,9 +144,9 @@ export function buildSceneQuery(game: SPDGame): QueryResult {
     ? {
         x: mainCam.x,
         y: mainCam.y,
-        zoom: renderer.zoom,
-        width: renderer.width,
-        height: renderer.height,
+        zoom: vm.scale,
+        width: vm.viewportWidth,
+        height: vm.viewportHeight,
         scrollX: -mainCam.container.x,
         scrollY: -mainCam.container.y,
         screenWidth: app.renderer.width / screenDpr,

@@ -1,12 +1,12 @@
 import { Assets, Graphics, Rectangle, Sprite, Texture } from 'pixi.js';
 import { Scene } from '../Scene';
-import { Renderer } from '../../core/engine/Renderer';
+import { ViewportManager } from '../../core/engine/ViewportManager';
 import { makeText } from '../text';
 
 export class TitleScene extends Scene {
   async create(): Promise<void> {
-    const W = Renderer.VIRTUAL_WIDTH;
-    const H = Renderer.VIRTUAL_HEIGHT;
+    const W = ViewportManager.BASE_WIDTH;
+    const H = ViewportManager.BASE_HEIGHT;
 
     // ── Dark background ──
     const bg = new Graphics();

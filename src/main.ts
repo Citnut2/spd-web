@@ -21,7 +21,7 @@ async function main() {
   // Wait for PixelFont to load before showing any text
   await waitForFont();
 
-  const sceneManager = new SceneManager(game.camera.container, game.camera);
+  const sceneManager = new SceneManager(game);
   game.sceneManager = sceneManager;
 
   // Scene switching via custom events

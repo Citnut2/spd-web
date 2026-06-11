@@ -1,6 +1,6 @@
 import { Container } from 'pixi.js';
 import { gate } from '../utils/Geom';
-import { Renderer } from './Renderer';
+import { ViewportManager } from './ViewportManager';
 
 export class Camera {
   readonly container: Container;
@@ -28,29 +28,35 @@ export class Camera {
 
   /** Snap camera immediately to a virtual pixel position */
   snapTo(virtualX: number, virtualY: number): void {
-    this._targetX = virtualX - Renderer.VIRTUAL_WIDTH / 2;
-    this._targetY = virtualY - Renderer.VIRTUAL_HEIGHT / 2;
+    const vw = ViewportManager.BASE_WIDTH;
+    const vh = ViewportManager.BASE_HEIGHT;
+    this._targetX = virtualX - vw / 2;
+    this._targetY = virtualY - vh / 2;
     this._x = this._targetX;
     this._y = this._targetY;
   }
 
   /** Center camera on a virtual pixel position (smooth pan via update()) */
   centerOn(virtualX: number, virtualY: number): void {
-    this._targetX = virtualX - Renderer.VIRTUAL_WIDTH / 2;
-    this._targetY = virtualY - Renderer.VIRTUAL_HEIGHT / 2;
+    const vw = ViewportManager.BASE_WIDTH;
+    const vh = ViewportManager.BASE_HEIGHT;
+    this._targetX = virtualX - vw / 2;
+    this._targetY = virtualY - vh / 2;
   }
 
   /** Snap camera immediately to a tile cell */
   snapToCell(cell: number, mapWidth: number): void {
-    const tileX = (cell % mapWidth) * Renderer.TILE_SIZE + Renderer.TILE_SIZE / 2;
-    const tileY = Math.floor(cell / mapWidth) * Renderer.TILE_SIZE + Renderer.TILE_SIZE / 2;
+    const tileSize = ViewportManager.TILE_SIZE;
+    const tileX = (cell % mapWidth) * tileSize + tileSize / 2;
+    const tileY = Math.floor(cell / mapWidth) * tileSize + tileSize / 2;
     this.snapTo(tileX, tileY);
   }
 
   /** Set camera target to a tile cell (smooth pan via update()) */
   centerOnCell(cell: number, mapWidth: number): void {
-    const tileX = (cell % mapWidth) * Renderer.TILE_SIZE + Renderer.TILE_SIZE / 2;
-    const tileY = Math.floor(cell / mapWidth) * Renderer.TILE_SIZE + Renderer.TILE_SIZE / 2;
+    const tileSize = ViewportManager.TILE_SIZE;
+    const tileX = (cell % mapWidth) * tileSize + tileSize / 2;
+    const tileY = Math.floor(cell / mapWidth) * tileSize + tileSize / 2;
     this.centerOn(tileX, tileY);
   }
 
@@ -80,16 +86,21 @@ export class Camera {
 
   /** Set map bounds so camera knows where to stop */
   setBounds(mapWidthTiles: number, mapHeightTiles: number): void {
-    this.maxScrollX = Math.max(0, mapWidthTiles * Renderer.TILE_SIZE - Renderer.VIRTUAL_WIDTH);
-    this.maxScrollY = Math.max(0, mapHeightTiles * Renderer.TILE_SIZE - Renderer.VIRTUAL_HEIGHT);
+    const ts = ViewportManager.TILE_SIZE;
+    const vw = ViewportManager.BASE_WIDTH;
+    const vh = ViewportManager.BASE_HEIGHT;
+    this.maxScrollX = Math.max(0, mapWidthTiles * ts - vw);
+    this.maxScrollY = Math.max(0, mapHeightTiles * ts - vh);
   }
 
   /** Convert screen position to world cell */
-  screenToCell(screenX: number, screenY: number, zoom: number, mapWidth: number): number {
-    const worldX = screenX / zoom + this._x;
-    const worldY = screenY / zoom + this._y;
-    const tileX = Math.floor(worldX / Renderer.TILE_SIZE);
-    const tileY = Math.floor(worldY / Renderer.TILE_SIZE);
+  screenToCell(screenX: number, screenY: number, mapWidth: number): number {
+    const vm = ViewportManager.instance;
+    const v = vm.screenToVirtual(screenX, screenY);
+    const worldX = v.x + this._x;
+    const worldY = v.y + this._y;
+    const tileX = Math.floor(worldX / ViewportManager.TILE_SIZE);
+    const tileY = Math.floor(worldY / ViewportManager.TILE_SIZE);
     return tileY * mapWidth + tileX;
   }
 }
