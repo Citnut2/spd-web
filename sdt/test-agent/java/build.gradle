@@ -1,0 +1,29 @@
+plugins {
+    id 'application'
+}
+
+repositories {
+    mavenCentral()
+    flatDir {
+        dirs '/home/citnut/Desktop/shattered-pixel-dungeon/SPD-classes/build/libs'
+        dirs '/home/citnut/Desktop/shattered-pixel-dungeon/core/build/libs'
+    }
+}
+
+dependencies {
+    implementation name: 'SPD-classes-3.3.5'
+    implementation name: 'core-3.3.5'
+    implementation 'com.badlogicgames.gdx:gdx-backend-headless:1.14.0'
+    implementation 'com.badlogicgames.gdx:gdx:1.14.0'
+    implementation 'com.badlogicgames.gdx:gdx-freetype:1.14.0'
+    implementation 'org.json:json:20170516'
+}
+
+application {
+    mainClass = 'com.sdt.testagent.TestAgentLauncher'
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
+}

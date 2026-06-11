@@ -1,0 +1,22 @@
+apply plugin: 'java-library'
+apply plugin: 'application'
+
+java.sourceCompatibility = JavaVersion.VERSION_11
+java.targetCompatibility = JavaVersion.VERSION_11
+
+mainClassName = 'ParityOracle'
+
+def spdRoot = '/home/citnut/Desktop/shattered-pixel-dungeon'
+
+dependencies {
+    implementation fileTree(dir: "${spdRoot}/SPD-classes/build/libs", include: '*.jar')
+    implementation fileTree(dir: "${spdRoot}/core/build/libs", include: '*.jar')
+    implementation "com.badlogicgames.gdx:gdx-backend-headless:1.14.0"
+    implementation "com.badlogicgames.gdx:gdx:1.14.0"
+    implementation "org.json:json:20170516"
+}
+
+repositories {
+    mavenCentral()
+    google()
+}

@@ -1,0 +1,775 @@
+===SDT_STATE:init===
+{
+  "seed": "TEST-ABC",
+  "depth": 1,
+  "turn": 0.0,
+  "checkpoint": "init",
+  "hero": {
+    "pos": 1144,
+    "HP": 20,
+    "HT": 20,
+    "STR": 10,
+    "class": "WARRIOR",
+    "level": 1,
+    "XP": 0,
+    "weapon": null,
+    "armor": null,
+    "ring": null,
+    "artifact": null,
+    "inventory": []
+  },
+  "level": {
+    "width": 40,
+    "height": 37,
+    "entrance": 1144,
+    "exit": 729,
+    "terrain": [4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,1,1,1,1,1,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,1,1,5,1,29,29,29,1,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4],
+    "mobs": [
+      {
+        "id": 1,
+        "type": "Rat",
+        "pos": 767,
+        "HP": 8,
+        "HT": 8,
+        "alignment": "ENEMY",
+        "state": "com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob$Sleeping@1330021b"
+      },
+      {
+        "id": 2,
+        "type": "Rat",
+        "pos": 226,
+        "HP": 8,
+        "HT": 8,
+        "alignment": "ENEMY",
+        "state": "com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob$Sleeping@7a45f440"
+      },
+      {
+        "id": 3,
+        "type": "Snake",
+        "pos": 395,
+        "HP": 4,
+        "HT": 4,
+        "alignment": "ENEMY",
+        "state": "com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob$Sleeping@4a8f2b93"
+      },
+      {
+        "id": 4,
+        "type": "Rat",
+        "pos": 607,
+        "HP": 8,
+        "HT": 8,
+        "alignment": "ENEMY",
+        "state": "com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob$Sleeping@2a34de18"
+      },
+      {
+        "id": 5,
+        "type": "Rat",
+        "pos": 1133,
+        "HP": 8,
+        "HT": 8,
+        "alignment": "ENEMY",
+        "state": "com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob$Sleeping@3987219f"
+      },
+      {
+        "id": 6,
+        "type": "Snake",
+        "pos": 969,
+        "HP": 4,
+        "HT": 4,
+        "alignment": "ENEMY",
+        "state": "com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob$Sleeping@6cb5251b"
+      },
+      {
+        "id": 7,
+        "type": "Rat",
+        "pos": 753,
+        "HP": 8,
+        "HT": 8,
+        "alignment": "ENEMY",
+        "state": "com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob$Sleeping@5f5548ad"
+      },
+      {
+        "id": 8,
+        "type": "Rat",
+        "pos": 397,
+        "HP": 8,
+        "HT": 8,
+        "alignment": "ENEMY",
+        "state": "com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob$Sleeping@531d9941"
+      }
+    ],
+    "heaps": [
+      {
+        "pos": 1123,
+        "items": [
+          {"type": "Gold", "quantity": 58}
+        ]
+      },
+      {
+        "pos": 141,
+        "items": [
+          {"type": "Gold", "quantity": 40}
+        ]
+      },
+      {
+        "pos": 1086,
+        "items": [
+          {"type": "Food", "quantity": 1}
+        ]
+      },
+      {
+        "pos": 724,
+        "items": [
+          {"type": "ScrollOfUpgrade", "quantity": 1}
+        ]
+      },
+      {
+        "pos": 1148,
+        "items": [
+          {"type": "Guidebook", "quantity": 1}
+        ]
+      },
+      {
+        "pos": 1378,
+        "items": [
+          {"type": "PotionOfStrength", "quantity": 1}
+        ]
+      },
+      {
+        "pos": 184,
+        "items": [
+          {"type": "IronKey", "quantity": 1}
+        ]
+      },
+      {
+        "pos": 1218,
+        "items": [
+          {"type": "Gold", "quantity": 72}
+        ]
+      }
+    ]
+  },
+  "rngCalls": 0
+}
+
+===SDT_END:init===
+===SDT_STATE:action_1===
+{
+  "seed": "TEST-ABC",
+  "depth": 1,
+  "turn": 0.0,
+  "checkpoint": "action_1",
+  "hero": {
+    "pos": 1144,
+    "HP": 20,
+    "HT": 20,
+    "STR": 10,
+    "class": "WARRIOR",
+    "level": 1,
+    "XP": 0,
+    "weapon": null,
+    "armor": null,
+    "ring": null,
+    "artifact": null,
+    "inventory": []
+  },
+  "level": {
+    "width": 40,
+    "height": 37,
+    "entrance": 1144,
+    "exit": 729,
+    "terrain": [4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,1,1,1,1,1,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,1,1,5,1,29,29,29,1,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4],
+    "mobs": [
+      {
+        "id": 1,
+        "type": "Rat",
+        "pos": 767,
+        "HP": 8,
+        "HT": 8,
+        "alignment": "ENEMY",
+        "state": "com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob$Sleeping@1330021b"
+      },
+      {
+        "id": 2,
+        "type": "Rat",
+        "pos": 226,
+        "HP": 8,
+        "HT": 8,
+        "alignment": "ENEMY",
+        "state": "com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob$Sleeping@7a45f440"
+      },
+      {
+        "id": 3,
+        "type": "Snake",
+        "pos": 395,
+        "HP": 4,
+        "HT": 4,
+        "alignment": "ENEMY",
+        "state": "com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob$Sleeping@4a8f2b93"
+      },
+      {
+        "id": 4,
+        "type": "Rat",
+        "pos": 607,
+        "HP": 8,
+        "HT": 8,
+        "alignment": "ENEMY",
+        "state": "com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob$Sleeping@2a34de18"
+      },
+      {
+        "id": 5,
+        "type": "Rat",
+        "pos": 1133,
+        "HP": 8,
+        "HT": 8,
+        "alignment": "ENEMY",
+        "state": "com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob$Sleeping@3987219f"
+      },
+      {
+        "id": 6,
+        "type": "Snake",
+        "pos": 969,
+        "HP": 4,
+        "HT": 4,
+        "alignment": "ENEMY",
+        "state": "com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob$Sleeping@6cb5251b"
+      },
+      {
+        "id": 7,
+        "type": "Rat",
+        "pos": 753,
+        "HP": 8,
+        "HT": 8,
+        "alignment": "ENEMY",
+        "state": "com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob$Sleeping@5f5548ad"
+      },
+      {
+        "id": 8,
+        "type": "Rat",
+        "pos": 397,
+        "HP": 8,
+        "HT": 8,
+        "alignment": "ENEMY",
+        "state": "com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob$Sleeping@531d9941"
+      }
+    ],
+    "heaps": [
+      {
+        "pos": 1123,
+        "items": [
+          {"type": "Gold", "quantity": 58}
+        ]
+      },
+      {
+        "pos": 141,
+        "items": [
+          {"type": "Gold", "quantity": 40}
+        ]
+      },
+      {
+        "pos": 1086,
+        "items": [
+          {"type": "Food", "quantity": 1}
+        ]
+      },
+      {
+        "pos": 724,
+        "items": [
+          {"type": "ScrollOfUpgrade", "quantity": 1}
+        ]
+      },
+      {
+        "pos": 1148,
+        "items": [
+          {"type": "Guidebook", "quantity": 1}
+        ]
+      },
+      {
+        "pos": 1378,
+        "items": [
+          {"type": "PotionOfStrength", "quantity": 1}
+        ]
+      },
+      {
+        "pos": 184,
+        "items": [
+          {"type": "IronKey", "quantity": 1}
+        ]
+      },
+      {
+        "pos": 1218,
+        "items": [
+          {"type": "Gold", "quantity": 72}
+        ]
+      }
+    ]
+  },
+  "rngCalls": 0
+}
+
+===SDT_END:action_1===
+===SDT_STATE:action_2===
+{
+  "seed": "TEST-ABC",
+  "depth": 1,
+  "turn": 0.0,
+  "checkpoint": "action_2",
+  "hero": {
+    "pos": 1104,
+    "HP": 20,
+    "HT": 20,
+    "STR": 10,
+    "class": "WARRIOR",
+    "level": 1,
+    "XP": 0,
+    "weapon": null,
+    "armor": null,
+    "ring": null,
+    "artifact": null,
+    "inventory": []
+  },
+  "level": {
+    "width": 40,
+    "height": 37,
+    "entrance": 1144,
+    "exit": 729,
+    "terrain": [4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,1,1,1,1,1,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,1,1,5,1,29,29,29,1,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4],
+    "mobs": [
+      {
+        "id": 1,
+        "type": "Rat",
+        "pos": 767,
+        "HP": 8,
+        "HT": 8,
+        "alignment": "ENEMY",
+        "state": "com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob$Sleeping@1330021b"
+      },
+      {
+        "id": 2,
+        "type": "Rat",
+        "pos": 226,
+        "HP": 8,
+        "HT": 8,
+        "alignment": "ENEMY",
+        "state": "com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob$Sleeping@7a45f440"
+      },
+      {
+        "id": 3,
+        "type": "Snake",
+        "pos": 395,
+        "HP": 4,
+        "HT": 4,
+        "alignment": "ENEMY",
+        "state": "com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob$Sleeping@4a8f2b93"
+      },
+      {
+        "id": 4,
+        "type": "Rat",
+        "pos": 607,
+        "HP": 8,
+        "HT": 8,
+        "alignment": "ENEMY",
+        "state": "com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob$Sleeping@2a34de18"
+      },
+      {
+        "id": 5,
+        "type": "Rat",
+        "pos": 1133,
+        "HP": 8,
+        "HT": 8,
+        "alignment": "ENEMY",
+        "state": "com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob$Sleeping@3987219f"
+      },
+      {
+        "id": 6,
+        "type": "Snake",
+        "pos": 969,
+        "HP": 4,
+        "HT": 4,
+        "alignment": "ENEMY",
+        "state": "com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob$Sleeping@6cb5251b"
+      },
+      {
+        "id": 7,
+        "type": "Rat",
+        "pos": 753,
+        "HP": 8,
+        "HT": 8,
+        "alignment": "ENEMY",
+        "state": "com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob$Sleeping@5f5548ad"
+      },
+      {
+        "id": 8,
+        "type": "Rat",
+        "pos": 397,
+        "HP": 8,
+        "HT": 8,
+        "alignment": "ENEMY",
+        "state": "com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob$Sleeping@531d9941"
+      }
+    ],
+    "heaps": [
+      {
+        "pos": 1123,
+        "items": [
+          {"type": "Gold", "quantity": 58}
+        ]
+      },
+      {
+        "pos": 141,
+        "items": [
+          {"type": "Gold", "quantity": 40}
+        ]
+      },
+      {
+        "pos": 1086,
+        "items": [
+          {"type": "Food", "quantity": 1}
+        ]
+      },
+      {
+        "pos": 724,
+        "items": [
+          {"type": "ScrollOfUpgrade", "quantity": 1}
+        ]
+      },
+      {
+        "pos": 1148,
+        "items": [
+          {"type": "Guidebook", "quantity": 1}
+        ]
+      },
+      {
+        "pos": 1378,
+        "items": [
+          {"type": "PotionOfStrength", "quantity": 1}
+        ]
+      },
+      {
+        "pos": 184,
+        "items": [
+          {"type": "IronKey", "quantity": 1}
+        ]
+      },
+      {
+        "pos": 1218,
+        "items": [
+          {"type": "Gold", "quantity": 72}
+        ]
+      }
+    ]
+  },
+  "rngCalls": 0
+}
+
+===SDT_END:action_2===
+===SDT_STATE:action_3===
+{
+  "seed": "TEST-ABC",
+  "depth": 1,
+  "turn": 0.0,
+  "checkpoint": "action_3",
+  "hero": {
+    "pos": 1103,
+    "HP": 20,
+    "HT": 20,
+    "STR": 10,
+    "class": "WARRIOR",
+    "level": 1,
+    "XP": 0,
+    "weapon": null,
+    "armor": null,
+    "ring": null,
+    "artifact": null,
+    "inventory": []
+  },
+  "level": {
+    "width": 40,
+    "height": 37,
+    "entrance": 1144,
+    "exit": 729,
+    "terrain": [4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,1,1,1,1,1,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,1,1,5,1,29,29,29,1,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4],
+    "mobs": [
+      {
+        "id": 1,
+        "type": "Rat",
+        "pos": 767,
+        "HP": 8,
+        "HT": 8,
+        "alignment": "ENEMY",
+        "state": "com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob$Sleeping@1330021b"
+      },
+      {
+        "id": 2,
+        "type": "Rat",
+        "pos": 226,
+        "HP": 8,
+        "HT": 8,
+        "alignment": "ENEMY",
+        "state": "com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob$Sleeping@7a45f440"
+      },
+      {
+        "id": 3,
+        "type": "Snake",
+        "pos": 395,
+        "HP": 4,
+        "HT": 4,
+        "alignment": "ENEMY",
+        "state": "com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob$Sleeping@4a8f2b93"
+      },
+      {
+        "id": 4,
+        "type": "Rat",
+        "pos": 607,
+        "HP": 8,
+        "HT": 8,
+        "alignment": "ENEMY",
+        "state": "com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob$Sleeping@2a34de18"
+      },
+      {
+        "id": 5,
+        "type": "Rat",
+        "pos": 1133,
+        "HP": 8,
+        "HT": 8,
+        "alignment": "ENEMY",
+        "state": "com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob$Sleeping@3987219f"
+      },
+      {
+        "id": 6,
+        "type": "Snake",
+        "pos": 969,
+        "HP": 4,
+        "HT": 4,
+        "alignment": "ENEMY",
+        "state": "com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob$Sleeping@6cb5251b"
+      },
+      {
+        "id": 7,
+        "type": "Rat",
+        "pos": 753,
+        "HP": 8,
+        "HT": 8,
+        "alignment": "ENEMY",
+        "state": "com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob$Sleeping@5f5548ad"
+      },
+      {
+        "id": 8,
+        "type": "Rat",
+        "pos": 397,
+        "HP": 8,
+        "HT": 8,
+        "alignment": "ENEMY",
+        "state": "com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob$Sleeping@531d9941"
+      }
+    ],
+    "heaps": [
+      {
+        "pos": 1123,
+        "items": [
+          {"type": "Gold", "quantity": 58}
+        ]
+      },
+      {
+        "pos": 141,
+        "items": [
+          {"type": "Gold", "quantity": 40}
+        ]
+      },
+      {
+        "pos": 1086,
+        "items": [
+          {"type": "Food", "quantity": 1}
+        ]
+      },
+      {
+        "pos": 724,
+        "items": [
+          {"type": "ScrollOfUpgrade", "quantity": 1}
+        ]
+      },
+      {
+        "pos": 1148,
+        "items": [
+          {"type": "Guidebook", "quantity": 1}
+        ]
+      },
+      {
+        "pos": 1378,
+        "items": [
+          {"type": "PotionOfStrength", "quantity": 1}
+        ]
+      },
+      {
+        "pos": 184,
+        "items": [
+          {"type": "IronKey", "quantity": 1}
+        ]
+      },
+      {
+        "pos": 1218,
+        "items": [
+          {"type": "Gold", "quantity": 72}
+        ]
+      }
+    ]
+  },
+  "rngCalls": 0
+}
+
+===SDT_END:action_3===
+===SDT_STATE:final===
+{
+  "seed": "TEST-ABC",
+  "depth": 1,
+  "turn": 0.0,
+  "checkpoint": "final",
+  "hero": {
+    "pos": 1103,
+    "HP": 20,
+    "HT": 20,
+    "STR": 10,
+    "class": "WARRIOR",
+    "level": 1,
+    "XP": 0,
+    "weapon": null,
+    "armor": null,
+    "ring": null,
+    "artifact": null,
+    "inventory": []
+  },
+  "level": {
+    "width": 40,
+    "height": 37,
+    "entrance": 1144,
+    "exit": 729,
+    "terrain": [4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,1,1,1,1,1,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,1,1,5,1,29,29,29,1,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4],
+    "mobs": [
+      {
+        "id": 1,
+        "type": "Rat",
+        "pos": 767,
+        "HP": 8,
+        "HT": 8,
+        "alignment": "ENEMY",
+        "state": "com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob$Sleeping@1330021b"
+      },
+      {
+        "id": 2,
+        "type": "Rat",
+        "pos": 226,
+        "HP": 8,
+        "HT": 8,
+        "alignment": "ENEMY",
+        "state": "com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob$Sleeping@7a45f440"
+      },
+      {
+        "id": 3,
+        "type": "Snake",
+        "pos": 395,
+        "HP": 4,
+        "HT": 4,
+        "alignment": "ENEMY",
+        "state": "com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob$Sleeping@4a8f2b93"
+      },
+      {
+        "id": 4,
+        "type": "Rat",
+        "pos": 607,
+        "HP": 8,
+        "HT": 8,
+        "alignment": "ENEMY",
+        "state": "com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob$Sleeping@2a34de18"
+      },
+      {
+        "id": 5,
+        "type": "Rat",
+        "pos": 1133,
+        "HP": 8,
+        "HT": 8,
+        "alignment": "ENEMY",
+        "state": "com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob$Sleeping@3987219f"
+      },
+      {
+        "id": 6,
+        "type": "Snake",
+        "pos": 969,
+        "HP": 4,
+        "HT": 4,
+        "alignment": "ENEMY",
+        "state": "com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob$Sleeping@6cb5251b"
+      },
+      {
+        "id": 7,
+        "type": "Rat",
+        "pos": 753,
+        "HP": 8,
+        "HT": 8,
+        "alignment": "ENEMY",
+        "state": "com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob$Sleeping@5f5548ad"
+      },
+      {
+        "id": 8,
+        "type": "Rat",
+        "pos": 397,
+        "HP": 8,
+        "HT": 8,
+        "alignment": "ENEMY",
+        "state": "com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob$Sleeping@531d9941"
+      }
+    ],
+    "heaps": [
+      {
+        "pos": 1123,
+        "items": [
+          {"type": "Gold", "quantity": 58}
+        ]
+      },
+      {
+        "pos": 141,
+        "items": [
+          {"type": "Gold", "quantity": 40}
+        ]
+      },
+      {
+        "pos": 1086,
+        "items": [
+          {"type": "Food", "quantity": 1}
+        ]
+      },
+      {
+        "pos": 724,
+        "items": [
+          {"type": "ScrollOfUpgrade", "quantity": 1}
+        ]
+      },
+      {
+        "pos": 1148,
+        "items": [
+          {"type": "Guidebook", "quantity": 1}
+        ]
+      },
+      {
+        "pos": 1378,
+        "items": [
+          {"type": "PotionOfStrength", "quantity": 1}
+        ]
+      },
+      {
+        "pos": 184,
+        "items": [
+          {"type": "IronKey", "quantity": 1}
+        ]
+      },
+      {
+        "pos": 1218,
+        "items": [
+          {"type": "Gold", "quantity": 72}
+        ]
+      }
+    ]
+  },
+  "rngCalls": 0
+}
+
+===SDT_END:final===

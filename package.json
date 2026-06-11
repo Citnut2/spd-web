@@ -1,0 +1,40 @@
+{
+  "name": "spd-clone",
+  "private": true,
+  "version": "0.0.1",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:fast": "vitest run --reporter=verbose",
+    "test:coverage": "vitest run --coverage",
+    "test:unit": "vitest run src/",
+    "test:sdt": "vitest run sdt/",
+    "test:ui": "vitest --ui",
+    "test:e2e": "playwright test tests/e2e/",
+    "test:e2e:ui": "playwright test tests/e2e/ --ui",
+    "parity": "bash sdt/scripts/run-parity.sh --all",
+    "parity:loop": "bash sdt/scripts/run-parity-loop.sh"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.61.0-alpha-2026-06-09",
+    "@types/node": "^25.9.2",
+    "@types/seedrandom": "^3.0.8",
+    "happy-dom": "^20.9.0",
+    "typescript": "~6.0.2",
+    "vite": "^8.0.10",
+    "vitest": "^4.1.5"
+  },
+  "dependencies": {
+    "@pixi/sound": "^6.0.1",
+    "immer": "^11.1.7",
+    "localforage": "^1.10.0",
+    "pixi.js": "^8.18.1",
+    "rot-js": "^2.2.1",
+    "seedrandom": "^3.0.5",
+    "zustand": "^5.0.13"
+  }
+}

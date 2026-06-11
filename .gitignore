@@ -1,0 +1,18 @@
+node_modules/
+dist/
+*.local
+.env
+test-results/
+playwright-report/
+*.tsbuildinfo
+*.log
+
+# Java harness
+sdt/java-harness/build/
+sdt/java-harness/.gradle/
+sdt/java-harness/bin/
+
+# Test agent Java
+sdt/test-agent/java/build/
+sdt/test-agent/java/.gradle/
+sdt/test-agent/java/bin/
