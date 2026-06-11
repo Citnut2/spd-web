@@ -34,6 +34,14 @@ export type QueryResult = {
   elements: SceneElement[];
 };
 
+/** Wait until the game is fully loaded and __spdQuery is available */
+export async function waitForGame(page: Page): Promise<void> {
+  await page.waitForFunction(() => {
+    const fn = (window as any).__spdQuery;
+    return typeof fn === 'function';
+  }, { timeout: 15000 });
+}
+
 /** Call the browser-side scene query and return parsed JSON */
 export async function queryScene(page: Page): Promise<QueryResult> {
   const result = await page.evaluate(() => {

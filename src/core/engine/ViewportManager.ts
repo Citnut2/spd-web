@@ -1,47 +1,32 @@
 import { Renderer } from './Renderer';
 
-export class ViewportManager {
-  static instance: ViewportManager;
+export type ResizeCallback = (viewport: ViewportManager) => void;
 
-  /** Virtual game resolution — all game logic uses these */
+export class ViewportManager {
   static readonly BASE_WIDTH = 160;
   static readonly BASE_HEIGHT = 144;
   static readonly TILE_SIZE = 16;
 
-  /** Current best-fit scale (integer preferred, fractional fallback) */
   scale = 4;
-
-  /** Canvas offset for centering (CSS pixels) */
   offsetX = 0;
   offsetY = 0;
-
-  /** Device pixel ratio (1x, 2x, 3x) */
   dpr = 1;
-
-  /** Physical canvas size in CSS pixels */
   canvasWidth = 0;
   canvasHeight = 0;
 
-  /** Orientation */
-  private _portrait = false;
-
-  /** Safe area insets in CSS pixels (notch, navbar, etc.) */
   safeTop = 0;
   safeBottom = 0;
   safeLeft = 0;
   safeRight = 0;
 
-  /** Fullscreen state */
+  private _portrait = false;
   private _fullscreen = false;
-
-  /** Resize observers / callbacks */
   private resizeObserver: ResizeObserver | null = null;
-  private resizeCallbacks: Array<() => void> = [];
+  private resizeCallbacks: Array<ResizeCallback> = [];
+  private renderer: Renderer | null = null;
 
   constructor() {
-    ViewportManager.instance = this;
     this.dpr = Math.max(1, window.devicePixelRatio || 1);
-
     document.addEventListener('fullscreenchange', () => {
       this._fullscreen = !!document.fullscreenElement;
     });
@@ -49,22 +34,27 @@ export class ViewportManager {
 
   get portrait(): boolean { return this._portrait; }
   get fullscreen(): boolean { return this._fullscreen; }
-
-  /** The virtual viewport is always the base resolution */
   get viewportWidth(): number { return ViewportManager.BASE_WIDTH; }
   get viewportHeight(): number { return ViewportManager.BASE_HEIGHT; }
 
-  /** Safe area in virtual pixels */
   get safeVirtualTop(): number { return Math.ceil(this.safeTop / this.scale); }
   get safeVirtualBottom(): number { return Math.ceil(this.safeBottom / this.scale); }
   get safeVirtualLeft(): number { return Math.ceil(this.safeLeft / this.scale); }
   get safeVirtualRight(): number { return Math.ceil(this.safeRight / this.scale); }
 
-  // ── Lifecycle ──
+  get textResolution(): number {
+    return this.scale * this.dpr;
+  }
 
-  /** Start observing a container element for resize */
+  setRenderer(renderer: Renderer): void {
+    this.renderer = renderer;
+  }
+
   observe(container: HTMLElement | null): void {
-    if (this.resizeObserver) this.resizeObserver.disconnect();
+    if (this.resizeObserver) {
+      this.resizeObserver.disconnect();
+      this.resizeObserver = null;
+    }
     if (!container) return;
 
     this.resizeObserver = new ResizeObserver(entries => {
@@ -75,11 +65,9 @@ export class ViewportManager {
     });
     this.resizeObserver.observe(container);
 
-    // Initial resize
     this.handleResize(container.clientWidth, container.clientHeight);
   }
 
-  /** Called when the container or window resizes */
   handleResize(width: number, height: number): void {
     this.canvasWidth = Math.max(1, Math.round(width));
     this.canvasHeight = Math.max(1, Math.round(height));
@@ -88,8 +76,7 @@ export class ViewportManager {
     this.readSafeArea();
     this.calculateScale();
 
-    // Resize the PixiJS renderer
-    const renderer = Renderer.instance;
+    const renderer = this.renderer;
     if (renderer) {
       renderer.app.renderer.resize(this.canvasWidth, this.canvasHeight);
       renderer.root.x = this.offsetX;
@@ -104,7 +91,6 @@ export class ViewportManager {
     const baseW = ViewportManager.BASE_WIDTH;
     const baseH = ViewportManager.BASE_HEIGHT;
 
-    // Try integer scale first
     const scaleX = Math.floor(this.canvasWidth / baseW);
     const scaleY = Math.floor(this.canvasHeight / baseH);
     const intScale = Math.max(1, Math.min(scaleX, scaleY));
@@ -112,13 +98,11 @@ export class ViewportManager {
     if (intScale >= 1) {
       this.scale = intScale;
     } else {
-      // Fractional fallback for tiny screens
       const fracX = this.canvasWidth / baseW;
       const fracY = this.canvasHeight / baseH;
       this.scale = Math.max(0.5, Math.min(fracX, fracY));
     }
 
-    // Center the virtual area
     this.offsetX = Math.floor((this.canvasWidth - baseW * this.scale) / 2);
     this.offsetY = Math.floor((this.canvasHeight - baseH * this.scale) / 2);
   }
@@ -137,9 +121,6 @@ export class ViewportManager {
     return isNaN(num) ? fallback : num;
   }
 
-  // ── Coordinate Conversion ──
-
-  /** Convert screen (CSS pixel) coordinates to virtual game coordinates */
   screenToVirtual(screenX: number, screenY: number): { x: number; y: number } {
     return {
       x: (screenX - this.offsetX) / this.scale,
@@ -147,7 +128,6 @@ export class ViewportManager {
     };
   }
 
-  /** Convert virtual game coordinates to screen (CSS pixel) coordinates */
   virtualToScreen(virtualX: number, virtualY: number): { x: number; y: number } {
     return {
       x: virtualX * this.scale + this.offsetX,
@@ -155,7 +135,6 @@ export class ViewportManager {
     };
   }
 
-  /** Convert screen position to tile cell index */
   screenToCell(
     screenX: number,
     screenY: number,
@@ -170,13 +149,6 @@ export class ViewportManager {
     const tileY = Math.floor(worldY / ViewportManager.TILE_SIZE);
     return tileY * mapWidth + tileX;
   }
-
-  /** Virtual text resolution (scale × dpr) for crisp text at any zoom */
-  get textResolution(): number {
-    return this.scale * this.dpr;
-  }
-
-  // ── Fullscreen ──
 
   async requestFullscreen(): Promise<void> {
     try {
@@ -195,13 +167,18 @@ export class ViewportManager {
     else await this.requestFullscreen();
   }
 
-  // ── Resize Callbacks ──
-
-  onResize(cb: () => void): void {
+  onResize(cb: ResizeCallback): void {
     this.resizeCallbacks.push(cb);
   }
 
+  removeResizeCallback(cb: ResizeCallback): void {
+    const idx = this.resizeCallbacks.indexOf(cb);
+    if (idx >= 0) this.resizeCallbacks.splice(idx, 1);
+  }
+
   private notifyResize(): void {
-    for (const cb of this.resizeCallbacks) cb();
+    for (const cb of this.resizeCallbacks) {
+      cb(this);
+    }
   }
 }

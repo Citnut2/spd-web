@@ -1,8 +1,8 @@
 import { Container } from 'pixi.js';
 import { Renderer } from './Renderer';
 import { Camera } from './Camera';
-import { Game } from './Game';
 import { ViewportManager } from './ViewportManager';
+import { Game } from './Game';
 import type { SceneManager } from '../../ui/SceneManager';
 
 export class SPDGame extends Game {
@@ -10,7 +10,6 @@ export class SPDGame extends Game {
   readonly camera: Camera;
   readonly viewport: ViewportManager;
 
-  /** Scene hierarchy layers */
   readonly worldLayer: Container;
   readonly effectLayer: Container;
   readonly uiLayer: Container;
@@ -27,9 +26,9 @@ export class SPDGame extends Game {
     this.camera = new Camera();
     this.viewport = this.renderer.viewport;
 
-    // Build scene hierarchy
     this.worldLayer = new Container();
     this.worldLayer.label = 'world-layer';
+    this.worldLayer.eventMode = 'static';
 
     this.effectLayer = new Container();
     this.effectLayer.label = 'effect-layer';
@@ -46,13 +45,6 @@ export class SPDGame extends Game {
   async init(container: HTMLElement): Promise<void> {
     await this.renderer.init(container);
 
-    // Assemble layer hierarchy inside the scaled root:
-    // root (scaled by ViewportManager)
-    //   ├── camera.container (moved by Camera for world scroll)
-    //   │    ├── worldLayer (DungeonRenderer, sprites, fog)
-    //   │    └── effectLayer (world-space particles)
-    //   ├── uiLayer (HUD, menus — fixed to screen in virtual coords)
-    //   └── debugLayer
     const root = this.renderer.root;
 
     this.camera.container.addChild(this.worldLayer);

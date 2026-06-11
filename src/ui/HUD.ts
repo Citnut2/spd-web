@@ -1,24 +1,29 @@
 import { Container } from 'pixi.js';
-import { StatusPane } from './StatusPane';
+import { StatusPane, STATUS_PANEL_WIDTH, STATUS_PANEL_HEIGHT } from './StatusPane';
 import { GameLog } from './GameLog';
-import { Toolbar } from './Toolbar';
-import { BuffIndicator } from './BuffIndicator';
+import { Toolbar, TOOLBAR_WIDTH, TOOLBAR_HEIGHT } from './Toolbar';
+import { InventoryPanel, INVENTORY_PANEL_WIDTH, INVENTORY_PANEL_HEIGHT } from './InventoryPanel';
 import { GLog } from './GLog';
-import { Hero } from '../core/hero/Hero';
-import { ViewportManager } from '../core/engine/ViewportManager';
+import type { Hero } from '../core/hero/Hero';
+import { AnchorLayout, ANCHOR } from './layout/AnchorLayout';
+import type { ViewportManager } from '../core/engine/ViewportManager';
+
+const LOG_PANEL_WIDTH = 120;
+const LOG_PANEL_HEIGHT = 28;
 
 export class HUD {
   readonly container: Container;
   readonly statusPane: StatusPane;
   readonly gameLog: GameLog;
   readonly toolbar: Toolbar;
-  readonly buffIndicator: BuffIndicator;
+  readonly inventoryPanel: InventoryPanel;
 
   private hero: Hero | null;
+  private layoutEngine: AnchorLayout;
 
   constructor(hero: Hero | null) {
     this.container = new Container();
-    this.container.eventMode = 'none';
+    this.container.eventMode = 'static';
     this.container.label = 'hud';
 
     this.hero = hero;
@@ -26,47 +31,66 @@ export class HUD {
     this.statusPane = new StatusPane(hero);
     this.gameLog = new GameLog();
     this.toolbar = new Toolbar();
-    this.buffIndicator = new BuffIndicator(hero);
+    this.inventoryPanel = new InventoryPanel(hero);
 
-    this.container.addChild(this.statusPane, this.gameLog, this.toolbar, this.buffIndicator);
+    this.container.addChild(this.statusPane, this.gameLog, this.toolbar, this.inventoryPanel);
 
-    this.positionElements();
-    this.toolbar.refreshSlots(hero);
+    this.layoutEngine = new AnchorLayout();
+    this.layoutEngine.addPanel({
+      container: this.toolbar,
+      anchor: ANCHOR.TOP_RIGHT,
+      width: TOOLBAR_WIDTH,
+      height: TOOLBAR_HEIGHT,
+      marginTop: 1,
+      marginRight: 1,
+    });
+    this.layoutEngine.addPanel({
+      container: this.gameLog,
+      anchor: ANCHOR.BOTTOM_LEFT,
+      width: LOG_PANEL_WIDTH,
+      height: LOG_PANEL_HEIGHT,
+      marginBottom: 1,
+    });
+    this.layoutEngine.addPanel({
+      container: this.statusPane,
+      anchor: ANCHOR.BOTTOM_LEFT,
+      width: STATUS_PANEL_WIDTH,
+      height: STATUS_PANEL_HEIGHT,
+      marginBottom: 1,
+    });
+    this.layoutEngine.addPanel({
+      container: this.inventoryPanel,
+      anchor: ANCHOR.BOTTOM_RIGHT,
+      width: INVENTORY_PANEL_WIDTH,
+      height: INVENTORY_PANEL_HEIGHT,
+      marginBottom: 1,
+      marginRight: 1,
+    });
 
     GLog.add('Welcome to the dungeon...');
     GLog.add('@@Use arrows or WASD to move');
   }
 
-  private positionElements(): void {
-    const VH = ViewportManager.BASE_HEIGHT;
-
-    // StatusPane at top
-    this.statusPane.x = 2;
-    this.statusPane.y = 1;
-
-    // BuffIndicator below status pane
-    this.buffIndicator.x = 2;
-    this.buffIndicator.y = this.statusPane.y + this.statusPane.contentHeight + 1;
-
-    // Toolbar at bottom
-    this.toolbar.x = 2;
-    this.toolbar.y = VH - Toolbar.HEIGHT - 2;
-
-    // GameLog above toolbar
-    this.gameLog.x = 2;
-    this.gameLog.y = this.toolbar.y - 4;
+  positionElements(viewport: ViewportManager): void {
+    this.layoutEngine.layout(
+      viewport.viewportWidth,
+      viewport.viewportHeight,
+      viewport.safeVirtualTop,
+      viewport.safeVirtualBottom,
+      viewport.safeVirtualLeft,
+      viewport.safeVirtualRight,
+    );
   }
 
-  setHero(hero: Hero | null): void {
+  setHero(hero: Hero | null, viewport?: ViewportManager): void {
     this.hero = hero;
+    if (viewport) this.positionElements(viewport);
     this.refresh();
   }
 
   refresh(): void {
     if (this.hero) {
       this.statusPane.refresh();
-      this.buffIndicator.refresh();
-      this.toolbar.refreshSlots(this.hero);
     }
   }
 

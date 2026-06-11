@@ -3,6 +3,7 @@
 import { Weapon } from '../Weapon';
 import type { Hero } from '../../../hero/Hero';
 import { IntRange } from '../../../utils/Random';
+import { GLog } from '../../../../ui/GLog';
 
 export abstract class MeleeWeapon extends Weapon {
   protected _tier = 1;
@@ -42,7 +43,16 @@ export abstract class MeleeWeapon extends Weapon {
     return this.constructor.name;
   }
 
-  doEquip(_hero: Hero): boolean {
+  doEquip(hero: Hero): boolean {
+    const belongings = hero.belongings;
+    const existing = belongings.weapon;
+    if (existing) {
+      belongings.weapon = null;
+      existing.collect(belongings.backpack);
+    }
+    this.detachAll(belongings.backpack);
+    belongings.weapon = this;
+    GLog.add(`@@Equipped ${this.name()}`);
     return true;
   }
 }

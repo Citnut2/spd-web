@@ -46,6 +46,7 @@ export type QueryResult = {
 export function buildSceneQuery(game: SPDGame): QueryResult {
   const { renderer } = game;
   const mainCam = game.camera;
+  const vm = game.viewport;
   const app = renderer.app;
   const screenDpr = window.devicePixelRatio || 1;
 

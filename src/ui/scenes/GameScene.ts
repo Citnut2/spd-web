@@ -1,5 +1,5 @@
 import { Scene } from '../Scene';
-import { Assets } from 'pixi.js';
+import { Assets, Container } from 'pixi.js';
 import { Dungeon } from '../../core/levels/Dungeon';
 import { DungeonRenderer } from '../../core/rendering/DungeonRenderer';
 import { FogOfWar } from '../../core/rendering/FogOfWar';
@@ -8,6 +8,7 @@ import { RatSprite } from '../../core/sprites/RatSprite';
 import { SlimeSprite } from '../../core/sprites/SlimeSprite';
 import { CharSprite } from '../../core/sprites/CharSprite';
 import { Camera } from '../../core/engine/Camera';
+import { ViewportManager } from '../../core/engine/ViewportManager';
 import { SPDGame } from '../../core/engine/SPDGame';
 import { Char } from '../../core/actors/Char';
 import { Hero, HeroClass } from '../../core/hero/Hero';
@@ -16,8 +17,8 @@ import { Game } from '../../core/engine/Game';
 import { HUD } from '../HUD';
 import { GLog } from '../GLog';
 import { PathFinder } from '../../core/utils/PathFinder';
-import { ViewportManager } from '../../core/engine/ViewportManager';
 import { WndBag } from '../windows/WndBag';
+import { setDropItem } from '../../core/items/Item';
 
 export class GameScene extends Scene {
   private cameraRef: Camera | null = null;
@@ -30,6 +31,7 @@ export class GameScene extends Scene {
   private mapWidth = 38;
   private isBusy = false;
   private pathQueue: number[] = [];
+  private uiLayerRef: Container | null = null;
 
   setCamera(camera: Camera): void {
     this.cameraRef = camera;
@@ -47,7 +49,13 @@ export class GameScene extends Scene {
     PathFinder.setMapSize(lvl.width, lvl.height);
     const hero = Dungeon.hero;
 
+    this.spdGame = Game.instance as SPDGame;
+    if (!this.cameraRef) {
+      this.cameraRef = this.spdGame.camera;
+    }
     if (!this.cameraRef || !hero) return;
+
+    this.uiLayerRef = this.spdGame.uiLayer;
 
     const waterPath = lvl.waterTex();
     if (waterPath) {
@@ -95,9 +103,14 @@ export class GameScene extends Scene {
     this.cameraRef.snapToCell(hero.pos, this.mapWidth);
     this.cameraRef.update();
 
-    this.spdGame = Game.instance as SPDGame;
+    setDropItem((item, pos) => {
+      const lvl = Dungeon.level;
+      if (lvl) lvl.drop(item, pos);
+    });
+
     this.hud = new HUD(hero);
-    this.spdGame.uiLayer.addChild(this.hud.container);
+    this.hud.positionElements(this.spdGame.viewport);
+    this.uiLayerRef.addChild(this.hud.container);
 
     this.hud.toolbar.setCallbacks({
       onWait: () => {
@@ -112,10 +125,14 @@ export class GameScene extends Scene {
       onInventory: () => {
         const h = Dungeon.hero;
         if (!h) return;
+        const vm = this.spdGame!.viewport;
         const wnd = new WndBag(h);
-        wnd.x = (ViewportManager.BASE_WIDTH - WndBag.WIDTH) / 2;
-        wnd.y = (ViewportManager.BASE_HEIGHT - WndBag.HEIGHT) / 2;
-        this.container.addChild(wnd);
+        wnd.x = (vm.viewportWidth - WndBag.WIDTH) / 2;
+        wnd.y = (vm.viewportHeight - WndBag.HEIGHT) / 2;
+        this.uiLayerRef!.addChild(wnd);
+        wnd.on('removed', () => {
+          this.hud?.refresh();
+        });
       },
       onSearch: () => {
         GLog.add('@@Searching...');
@@ -185,7 +202,7 @@ export class GameScene extends Scene {
         }
         if (enemy && !enemy.isAlive()) {
           const idx = this.mobSprites.indexOf(
-            this.mobSprites.find(s => s['ch'] === enemy)!
+            this.mobSprites.find(s => (s as unknown as Record<string, unknown>)['ch'] === enemy)!,
           );
           if (idx >= 0) {
             (this.mobSprites[idx] as CharSprite).visible = false;
@@ -215,9 +232,12 @@ export class GameScene extends Scene {
       if (this.isBusy || !Dungeon.hero?.isAlive()) return;
       const level = Dungeon.level;
       const hero = Dungeon.hero;
-      if (!level || !hero || !this.cameraRef) return;
+      if (!level || !hero || !this.cameraRef || !this.spdGame) return;
 
-      const cell = this.cameraRef.screenToCell(e.globalX, e.globalY, this.mapWidth);
+      const cell = this.cameraRef.screenToCell(
+        e.globalX, e.globalY, this.mapWidth, 16,
+        (sx, sy) => this.spdGame!.viewport.screenToVirtual(sx, sy),
+      );
       if (cell < 0 || cell >= level.length) return;
 
       this.handleCellClick(cell, hero, level);
@@ -283,6 +303,22 @@ export class GameScene extends Scene {
   private onMoveComplete(hero: Char): void {
     const level = Dungeon.level;
     if (!level) return;
+
+    const heap = level.heaps.get(hero.pos);
+    if (heap && !heap.isEmpty() && hero instanceof Hero) {
+      const items = [...heap.items];
+      for (const item of items) {
+        item.doPickUp();
+        if (item.collect(hero.belongings.backpack)) {
+          heap.remove(item);
+        }
+      }
+      if (heap.isEmpty()) {
+        heap.destroy();
+        level.heaps.delete(hero.pos);
+      }
+    }
+
     this.processTurn(hero, level);
   }
 
@@ -319,18 +355,26 @@ export class GameScene extends Scene {
     this.hud?.update();
   }
 
+  onResize(viewport: ViewportManager): void {
+    if (this.hud) {
+      this.hud.positionElements(viewport);
+    }
+  }
+
   destroy(): void {
     if (this._keyHandler) {
       window.removeEventListener('keydown', this._keyHandler);
     }
     if (this.hud) {
-      this.spdGame?.uiLayer.removeChild(this.hud.container);
+      this.hud.container.removeFromParent();
       this.hud = null;
     }
     this.mobSprites = [];
     this.heroSprite = null;
     this.fogOfWar = null;
     this.dungeonRenderer = null;
+    this.uiLayerRef = null;
+    this.spdGame = null;
     super.destroy();
   }
 }

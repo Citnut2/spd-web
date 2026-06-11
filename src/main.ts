@@ -3,10 +3,9 @@ import { TextureSource } from 'pixi.js';
 import { SPDGame } from './core/engine/SPDGame';
 import { SceneManager } from './ui/SceneManager';
 import { Dungeon } from './core/levels/Dungeon';
-import { waitForFont } from './ui/text';
+import { waitForFont, setTextResolutionSource } from './ui/text';
 import { buildSceneQuery } from '../sdt/web-harness/SceneGraphReader';
 
-// All textures use nearest-neighbor filtering for crisp pixel art
 TextureSource.defaultOptions.scaleMode = 'nearest';
 
 async function main() {
@@ -18,13 +17,17 @@ async function main() {
 
   await game.init(container);
 
-  // Wait for PixelFont to load before showing any text
+  setTextResolutionSource(game.viewport);
+
   await waitForFont();
 
   const sceneManager = new SceneManager(game);
   game.sceneManager = sceneManager;
 
-  // Scene switching via custom events
+  game.viewport.onResize(() => {
+    sceneManager.handleResize();
+  });
+
   window.addEventListener('spd:scene', ((e: CustomEvent) => {
     const { scene, heroClass } = e.detail;
     if (scene === 'game' && heroClass) {
@@ -34,11 +37,9 @@ async function main() {
     sceneManager.switchTo(scene);
   }) as EventListener);
 
-  // Start with title scene
   await sceneManager.switchTo('title');
   game.start();
 
-  // Expose game instance + scene query for Playwright / devtools
   (window as unknown as Record<string, unknown>).__spdGame = game;
   (window as unknown as Record<string, unknown>).__spdQuery = () => buildSceneQuery(game);
 

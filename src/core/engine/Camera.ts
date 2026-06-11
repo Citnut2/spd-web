@@ -1,6 +1,5 @@
 import { Container } from 'pixi.js';
 import { gate } from '../utils/Geom';
-import { ViewportManager } from './ViewportManager';
 
 export class Camera {
   readonly container: Container;
@@ -14,9 +13,11 @@ export class Camera {
   private panSpeed = 0.1;
   private shakeDecay = 0.9;
 
-  /** Max scroll in virtual pixels (set when level dimensions are known) */
   maxScrollX = 0;
   maxScrollY = 0;
+
+  private _viewportWidth = 160;
+  private _viewportHeight = 144;
 
   constructor() {
     this.container = new Container();
@@ -25,36 +26,33 @@ export class Camera {
 
   get x(): number { return this._x; }
   get y(): number { return this._y; }
+  get viewportWidth(): number { return this._viewportWidth; }
+  get viewportHeight(): number { return this._viewportHeight; }
 
-  /** Snap camera immediately to a virtual pixel position */
+  setViewportSize(vw: number, vh: number): void {
+    this._viewportWidth = vw;
+    this._viewportHeight = vh;
+  }
+
   snapTo(virtualX: number, virtualY: number): void {
-    const vw = ViewportManager.BASE_WIDTH;
-    const vh = ViewportManager.BASE_HEIGHT;
-    this._targetX = virtualX - vw / 2;
-    this._targetY = virtualY - vh / 2;
+    this._targetX = virtualX - this._viewportWidth / 2;
+    this._targetY = virtualY - this._viewportHeight / 2;
     this._x = this._targetX;
     this._y = this._targetY;
   }
 
-  /** Center camera on a virtual pixel position (smooth pan via update()) */
   centerOn(virtualX: number, virtualY: number): void {
-    const vw = ViewportManager.BASE_WIDTH;
-    const vh = ViewportManager.BASE_HEIGHT;
-    this._targetX = virtualX - vw / 2;
-    this._targetY = virtualY - vh / 2;
+    this._targetX = virtualX - this._viewportWidth / 2;
+    this._targetY = virtualY - this._viewportHeight / 2;
   }
 
-  /** Snap camera immediately to a tile cell */
-  snapToCell(cell: number, mapWidth: number): void {
-    const tileSize = ViewportManager.TILE_SIZE;
+  snapToCell(cell: number, mapWidth: number, tileSize = 16): void {
     const tileX = (cell % mapWidth) * tileSize + tileSize / 2;
     const tileY = Math.floor(cell / mapWidth) * tileSize + tileSize / 2;
     this.snapTo(tileX, tileY);
   }
 
-  /** Set camera target to a tile cell (smooth pan via update()) */
-  centerOnCell(cell: number, mapWidth: number): void {
-    const tileSize = ViewportManager.TILE_SIZE;
+  centerOnCell(cell: number, mapWidth: number, tileSize = 16): void {
     const tileX = (cell % mapWidth) * tileSize + tileSize / 2;
     const tileY = Math.floor(cell / mapWidth) * tileSize + tileSize / 2;
     this.centerOn(tileX, tileY);
@@ -66,15 +64,12 @@ export class Camera {
   }
 
   update(): void {
-    // Smooth pan
     this._x += (this._targetX - this._x) * this.panSpeed;
     this._y += (this._targetY - this._y) * this.panSpeed;
 
-    // Clamp to bounds
     this._x = gate(0, this._x, this.maxScrollX);
     this._y = gate(0, this._y, this.maxScrollY);
 
-    // Shake decay
     this._shakeX *= this.shakeDecay;
     this._shakeY *= this.shakeDecay;
     if (Math.abs(this._shakeX) < 0.5) this._shakeX = 0;
@@ -84,23 +79,23 @@ export class Camera {
     this.container.y = -Math.round(this._y + this._shakeY);
   }
 
-  /** Set map bounds so camera knows where to stop */
-  setBounds(mapWidthTiles: number, mapHeightTiles: number): void {
-    const ts = ViewportManager.TILE_SIZE;
-    const vw = ViewportManager.BASE_WIDTH;
-    const vh = ViewportManager.BASE_HEIGHT;
-    this.maxScrollX = Math.max(0, mapWidthTiles * ts - vw);
-    this.maxScrollY = Math.max(0, mapHeightTiles * ts - vh);
+  setBounds(mapWidthTiles: number, mapHeightTiles: number, tileSize = 16): void {
+    this.maxScrollX = Math.max(0, mapWidthTiles * tileSize - this._viewportWidth);
+    this.maxScrollY = Math.max(0, mapHeightTiles * tileSize - this._viewportHeight);
   }
 
-  /** Convert screen position to world cell */
-  screenToCell(screenX: number, screenY: number, mapWidth: number): number {
-    const vm = ViewportManager.instance;
-    const v = vm.screenToVirtual(screenX, screenY);
+  screenToCell(
+    screenX: number,
+    screenY: number,
+    mapWidth: number,
+    tileSize = 16,
+    toVirtual: (sx: number, sy: number) => { x: number; y: number },
+  ): number {
+    const v = toVirtual(screenX, screenY);
     const worldX = v.x + this._x;
     const worldY = v.y + this._y;
-    const tileX = Math.floor(worldX / ViewportManager.TILE_SIZE);
-    const tileY = Math.floor(worldY / ViewportManager.TILE_SIZE);
+    const tileX = Math.floor(worldX / tileSize);
+    const tileY = Math.floor(worldY / tileSize);
     return tileY * mapWidth + tileX;
   }
 }

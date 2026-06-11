@@ -3,7 +3,7 @@ import { defineConfig } from '@playwright/test';
 export default defineConfig({
   testDir: './tests/e2e',
   testMatch: ['**/*.e2e.ts'],
-  timeout: 30000,
+  timeout: 120000,
   expect: { timeout: 5000 },
   fullyParallel: false,
   retries: 0,

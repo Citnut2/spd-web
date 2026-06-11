@@ -9,9 +9,14 @@ interface TextOptions {
   fill: string;
 }
 
+let _viewportRef: ViewportManager | null = null;
+
+export function setTextResolutionSource(vm: ViewportManager): void {
+  _viewportRef = vm;
+}
+
 function getTextRes(): number {
-  const vm = ViewportManager.instance;
-  if (vm) return vm.textResolution;
+  if (_viewportRef) return _viewportRef.textResolution;
   return 4 * Math.max(1, window.devicePixelRatio || 1);
 }
 
@@ -30,9 +35,7 @@ export function makeText(options: TextOptions): Text {
 }
 
 export function refreshTextResolution(): void {
-  const res = getTextRes();
-  // Walk all Text objects and update resolution — not needed unless text is reused
-  // After this call, newly created Text objects will use the new resolution
+  // Text resolution will be picked up by new Text objects via getTextRes()
 }
 
 export async function waitForFont(): Promise<void> {

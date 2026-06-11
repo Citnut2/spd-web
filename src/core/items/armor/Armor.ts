@@ -2,6 +2,7 @@
 
 import { EquipableItem } from '../EquipableItem';
 import type { Hero } from '../../hero/Hero';
+import { GLog } from '../../../ui/GLog';
 
 export enum ArmorAugment {
   EVASION = 'EVASION',
@@ -65,7 +66,16 @@ export abstract class Armor extends EquipableItem {
     return this.constructor.name;
   }
 
-  doEquip(_hero: Hero): boolean {
+  doEquip(hero: Hero): boolean {
+    const belongings = hero.belongings;
+    const existing = belongings.armor;
+    if (existing) {
+      belongings.armor = null;
+      existing.collect(belongings.backpack);
+    }
+    this.detachAll(belongings.backpack);
+    belongings.armor = this;
+    GLog.add(`@@Equipped ${this.name()}`);
     return true;
   }
 }

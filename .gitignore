@@ -6,6 +6,7 @@ test-results/
 playwright-report/
 *.tsbuildinfo
 *.log
+tmp/
 
 # Java harness
 sdt/java-harness/build/
@@ -16,3 +17,5 @@ sdt/java-harness/bin/
 sdt/test-agent/java/build/
 sdt/test-agent/java/.gradle/
 sdt/test-agent/java/bin/
+
+./package-lock.json

@@ -38,8 +38,21 @@ export class Item {
     return [Item.AC_DROP, Item.AC_THROW];
   }
 
-  execute(_hero: Hero, _action: string): void {
-    // stub
+  execute(hero: Hero, action: string): void {
+    if (action === Item.AC_DROP) {
+      this.doDrop(hero.pos);
+    }
+  }
+
+  info(): string {
+    let info = this.name();
+    if (this.levelKnown && this._level !== 0) {
+      info += this._level > 0 ? ` +${this._level}` : ` ${this._level}`;
+    }
+    if (this.cursedKnown && this.cursed) {
+      info += ' (cursed)';
+    }
+    return info || 'Unknown item';
   }
 
   doPickUp(): boolean {

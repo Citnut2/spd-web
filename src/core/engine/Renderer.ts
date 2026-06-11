@@ -1,9 +1,7 @@
-import { Application, Container, TextureSource } from 'pixi.js';
+import { Application, Container } from 'pixi.js';
 import { ViewportManager } from './ViewportManager';
 
 export class Renderer {
-  static instance: Renderer;
-
   readonly app: Application;
   readonly root: Container;
   readonly viewport: ViewportManager;
@@ -11,21 +9,23 @@ export class Renderer {
   private _initialized = false;
 
   constructor() {
-    Renderer.instance = this;
     this.app = new Application();
     this.root = new Container();
     this.viewport = new ViewportManager();
+    this.viewport.setRenderer(this);
   }
 
   async init(container: HTMLElement): Promise<void> {
     if (this._initialized) return;
     this._initialized = true;
 
+    const w = container.clientWidth || 640;
+    const h = container.clientHeight || 480;
     const dpr = Math.max(1, window.devicePixelRatio || 1);
 
     await this.app.init({
-      width: container.clientWidth || 640,
-      height: container.clientHeight || 480,
+      width: Math.round(w * dpr),
+      height: Math.round(h * dpr),
       backgroundColor: 0x000000,
       resolution: dpr,
       antialias: false,
@@ -39,7 +39,6 @@ export class Renderer {
     this.app.stage.addChild(this.root);
     this.root.eventMode = 'static';
 
-    // ViewportManager monitors container size and handles resize
     this.viewport.observe(container);
   }
 

@@ -12,19 +12,16 @@ export class HeroSelectScene extends Scene {
     const W = ViewportManager.BASE_WIDTH;
     const H = ViewportManager.BASE_HEIGHT;
 
-    // ── Background ──
     const bg = new Graphics();
     bg.rect(0, 0, W, H).fill({ color: 0x0a0a0f });
     this.container.addChild(bg);
 
-    // ── Title ──
     const title = makeText({ text: 'SELECT HERO', size: 7, fill: '#ffcc00' });
     title.anchor.set(0.5, 0);
     title.x = Math.round(W / 2);
     title.y = 8;
     this.container.addChild(title);
 
-    // ── Class buttons ──
     CLASSES.forEach((cls, i) => {
       const y = 24 + i * 16;
       const isSelected = cls === this.selectedClass;
@@ -49,7 +46,6 @@ export class HeroSelectScene extends Scene {
       this.container.addChild(btn);
     });
 
-    // ── Start Game button ──
     const startBtn = makeText({ text: '== Start Game ==', size: 7, fill: '#44ff44' });
     startBtn.anchor.set(0.5, 0);
     startBtn.x = Math.round(W / 2);
@@ -63,7 +59,6 @@ export class HeroSelectScene extends Scene {
     });
     this.container.addChild(startBtn);
 
-    // ── Back button ──
     const backBtn = makeText({ text: '[ Back ]', size: 5, fill: '#aaaaaa' });
     backBtn.x = 2;
     backBtn.y = Math.round(H - 10);
@@ -73,5 +68,9 @@ export class HeroSelectScene extends Scene {
       window.dispatchEvent(new CustomEvent('spd:scene', { detail: { scene: 'title' } }));
     });
     this.container.addChild(backBtn);
+  }
+
+  onResize(_viewport: ViewportManager): void {
+    // Hero select is centered automatically via root scaling
   }
 }

@@ -2,6 +2,9 @@ import { Container, Graphics } from 'pixi.js';
 import { makeText } from './text';
 import type { Hero } from '../core/hero/Hero';
 
+export const TOOLBAR_WIDTH = 72;
+export const TOOLBAR_HEIGHT = 14;
+
 export class Toolbar extends Container {
   private btnWait: Container;
   private btnInventory: Container;
