@@ -1,5 +1,6 @@
 import { GLog } from '../../ui/GLog';
 import { Ballistica } from '../mechanics/Ballistica';
+import { Hero } from '../hero/Hero';
 import { Bag } from './Bag';
 
 export let dropItem: ((item: Item, pos: number) => void) | null = null;
@@ -33,8 +34,12 @@ export class Item {
   keptThoughLostInvent = false;
   bones = false;
 
-  actions(): string[] {
+  actions(_hero?: Hero): string[] {
     return [Item.AC_DROP, Item.AC_THROW];
+  }
+
+  execute(_hero: Hero, _action: string): void {
+    // stub
   }
 
   doPickUp(): boolean {
@@ -187,4 +192,12 @@ export class Item {
 
   castDelay(): number { return Item.TIME_TO_THROW; }
   pickupDelay(): number { return Item.TIME_TO_PICK_UP; }
+
+  buffedLvl(): number { return this._level; }
+
+  onDetach(): void {
+    // override in subclasses
+  }
+
+  glowing(): any { return null; }
 }

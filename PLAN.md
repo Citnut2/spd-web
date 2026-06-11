@@ -21,13 +21,13 @@ Port **Shattered Pixel Dungeon** (1,277 Java files, v3.3.5) từ Java/LibGDX →
 | 0.9 | Title + HeroSelect scenes | ✅ | Text menu with scene transitions |
 | 0.10 | Asset loading + rendering pipeline | ✅ | `Assets.load()`-based, DungeonRenderer + Tilemap system |
 
-## Phase 1: Core Gameplay (In Progress)
+## Phase 1: Core Gameplay ✅ (Completed)
 
 | # | Task | Status | Notes |
 |---|------|--------|-------|
 | 1.1 | Terrain (40 types + flag bitmask) | ✅ | `Terrain.ts` — constants match Java, 14 flags (PASSABLE, LOS_BLOCKING, LIQUID, PIT...) |
 | 1.2 | `Level.ts` base: size, FOV, flags, cleanWalls | ✅ | `Level.ts` — map[], flags, visited/mapped, `tilesTex()`/`waterTex()`, `updateFieldOfView()` |
-| 1.3 | Room system | 🔲 | Partially done inside SewerLevel (room+corridor gen) |
+| 1.3 | Room system (Room, StandardRoom, SpecialRoom, builders) | ✅ | Full port: Room.ts (462 lines), StandardRoom, SpecialRoom, builders (LoopBuilder, RegularBuilder), painters, 10 special room types |
 | 1.4 | SewerLevel: rooms, corridors, water, grass, decorations | ✅ | `SewerLevel.ts` — entrance/exit, water/grass tiles, Rat/Slime spawns |
 | 1.5 | `Dungeon.ts`: seed, depth, init, newLevel | ✅ | `Dungeon.ts` — seedCurDepth, seedForDepth, 26-depth switch |
 | 1.6 | `Char.ts`: HP, attack, defense, damage, movement | ✅ | HP/STR, min/max attack, damage roll, buffs, alignment |
@@ -46,35 +46,78 @@ Port **Shattered Pixel Dungeon** (1,277 Java files, v3.3.5) từ Java/LibGDX →
 | 1.19 | Crisp rendering: nearest-neighbor × roundPixels × hi-DPI text | ✅ | `TextureSource.defaultOptions.scaleMode='nearest'`, `roundPixels:true` renderer, `_autoResolution=false` + `resolution=SCALE×DPR`, `document.fonts.ready` preload |
 | **→** | **Playable: hero moves, fights rats, explores Sewers** | ✅ | Hero walks with WASD/arrows, attacks mobs, collision, fog-of-war, mob AI |
 
-## Phase 2: Items & Inventory (Weeks 9-16)
+## Phase 2: Items & Inventory (In Progress)
 
 | # | Task | Files | Status |
 |---|------|-------|--------|
-| 2.1–2.16 | All item systems | ~249 files | 🔲 |
+| 2.1 | Item base class + subclasses (Item, EquipableItem, KindofMisc, KindOfWeapon) | `Item.ts`, `EquipableItem.ts`, `KindofMisc.ts`, `KindOfWeapon.ts` | ✅ |
+| 2.2 | Gold | `Gold.ts` | ✅ |
+| 2.3 | Heap system (drop/pickup/stack) | `Heap.ts` | ✅ |
+| 2.4 | Generator: deck-based probability system, category registration | `Generator.ts` | ✅ |
+| 2.5 | Consumables: Potions (all 12) + Scrolls (all 12) | `potions/*.ts`, `scrolls/*.ts` | ✅ |
+| 2.6 | Wand base + WandOfMagicMissile + DamageWand | `wands/*.ts` | ✅ |
+| 2.7 | Ring base + RingOfAccuracy + RingOfEvasion | `rings/*.ts` | ✅ |
+| 2.8 | Artifact base (13 subclasses pending) | `artifacts/Artifact.ts` | ✅ (base only) |
+| 2.9 | Food: MysteryMeat + Food base | `food/*.ts` | ✅ |
+| 2.10 | Melee weapons (T1-T5, 25 classes, 4 ported) | `weapon/melee/*.ts` | 🔲 (4/25 ported) |
+| 2.11 | Armor (Cloth/Leather + 7 higher tiers) | `armor/*.ts` | 🔲 (2/9 ported) |
+| 2.12 | Item sprites (ItemSpriteSheet + ItemSprite) | `sprites/ItemSpriteSheet.ts`, `sprites/ItemSprite.ts` | ✅ |
+| 2.13 | Item spawning in level creation | `RegularLevel.createItems()` | ✅ (basic implementation) |
+| 2.14 | Missile weapons (16 classes), darts (11 classes) | — | 🔲 |
+| 2.15 | Rings (10 more), Wands (12 more) | — | 🔲 |
+| 2.16 | Bags, Keys, Seeds, Stones, Trinkets, Bombs | — | 🔲 |
 
-## Phase 3: Dungeon Content (Weeks 17-24)
+## Phase 3: Dungeon Content (In Progress)
 
 | # | Task | Status |
 |---|------|--------|
-| 3.1–3.8 | Enemies, bosses, traps, plants, rooms | 🔲 |
+| 3.1 | Special rooms (10 of 24 ported: Shop, Pool, Garden, Lab, Pit, WeakFloor, MagicWell, Traps, Statue) | ✅ (with TODO stubs for items/keys/NPCs) |
+| 3.2 | Standard room subtypes (~40 in Java) | 🔲 (inline EmptyRoom only) |
+| 3.3 | Connection room subtypes (7 in Java) | 🔲 (TunnelConnectionRoom stub only) |
+| 3.4 | Level types: Prison, Caves, City, Halls (4 of 16 ported) | 🔲 (SewerLevel only) |
+| 3.5 | Boss levels (SewerBoss, PrisonBoss, CavesBoss, CityBoss, HallsBoss) | 🔲 |
+| 3.6 | Traps system | 🔲 (stub — trapClasses/Chances return empty) |
+| 3.7 | Shops + shopOnLevel | 🔲 (always false) |
+| 3.8 | Enemy variety (85 types, 2 ported: Rat, Slime) | 🔲 |
 
-## Phase 4: Advanced Systems (Weeks 25-32)
+## Phase 4: Advanced Systems (In Progress)
 
 | # | Task | Status |
 |---|------|--------|
-| 4.1–4.10 | Buffs, blobs, quests, NPCs, talents, alchemy, UI | 🔲 |
+| 4.1 | Buff system base (Buff, FlavourBuff, CounterBuff, ShieldBuff, AllyBuff) | ✅ |
+| 4.2 | Concrete buffs (15 of 87 ported: Burning, Frost, Chill, Poison, Paralysis, Haste, Invisibility, Levitation, MindVision, Bless, Amok, Terror, MagicalSleep, Hunger, Regeneration) | 🔲 (15/87) |
+| 4.3 | Blob system (22 types) | 🔲 |
+| 4.4 | Quests, NPCs | 🔲 |
+| 4.5 | Talents | 🔲 |
+| 4.6 | Alchemy system | 🔲 |
+| 4.7 | UI windows (53 types) | 🔲 |
+| 4.8 | Game log + messages | 🔲 |
+| 4.9 | Save/load (Bundle system) | 🔲 |
+| 4.10 | Badges, achievements | 🔲 |
 
-## Phase 5: Polish & Meta (Weeks 33-38)
+## Phase 5: Polish & Meta
 
 | # | Task | Status |
 |---|------|--------|
 | 5.1–5.9 | Effects, audio, save/load, badges, ascension | 🔲 |
 
-## Phase 6: Testing & Deploy (Weeks 39-42)
+## Phase 6: Testing & Deploy
 
 | # | Task | Status |
 |---|------|--------|
 | 6.1–6.5 | Tests, parity, perf, mobile, deploy | 🔲 |
+
+---
+
+## Current State
+
+```
+tsc --noEmit → 0 errors
+npm test     → 87/88 pass (1 pre-existing TEST-ABC Java parity without ParityOracle.jar)
+vite build   → success (522 KiB)
+```
+
+**What's playable:** Hero walks with WASD, fights Rats/Slimes in Sewers, fog-of-war, smooth camera, item spawning via Generator.
 
 ---
 
@@ -103,14 +146,12 @@ app.stage (PixiJS v8 Application)
 
 ## Next Steps (Immediate)
 
-1. ✅ **Water rendering** — `WaterRenderer.ts` (TilingSprite, Y-UV scroll)
-2. ✅ **FogOfWar** — `FogOfWar.ts` (canvas-based 2px/tile, dirty rects, wall half-cells)
-3. ✅ **Hero sprite** — `CharSprite`/`HeroSprite` on tilemap with collision + combat
-4. ✅ **Smooth movement** — sprite slides 100ms, camera follows
-5. ✅ **Crisp rendering** — nearest-neighbor, roundPixels, hi-DPI text
-6. **SDT Java harness** — run first headless parity test (requires Java build)
-7. **HUD + status pane** — health bar, game log, toolbar
-8. **Items/Inventory** — gold, potions, scrolls, weapons (Phase 2)
+1. HUD + status pane — health bar, game log, toolbar
+2. Inventory UI — pick up, equip, use items
+3. More enemies (Gnoll, Swarm, Crab, etc.)
+4. Prison level + painter
+5. Port remaining melee weapons (21 more)
+6. SDT Java harness — run first headless parity test (requires Java build)
 
 ## Key Tech Notes
 
@@ -126,6 +167,8 @@ app.stage (PixiJS v8 Application)
 | Text rendering | `makeText()` in `src/ui/text.ts`: `_autoResolution=false`, `resolution=SCALE×DPR`, PixelFont + `document.fonts.ready` |
 | Smooth movement | `CharSprite.startMove/updateMove` (100ms interpolation), `isBusy` blocks input, camera target set on arrival |
 | Codegraph | Always via `npx codegraph query ... --path <specific-file>` |
+| Buff API | `Buff.append<T>`, `Buff.affect<T>`, `Buff.prolong<T>`, `Buff.count<T>` — static generics matching Java |
+| Generator | Deck-based probability with separate RNG seeds per category; `fullReset`/`generalReset`/`reset` for run/floor/item resets |
 
 ## SDT Framework Architecture
 

@@ -64,6 +64,16 @@ export class SlimeSprite extends MobSprite {
     }
   }
 
+  protected override playRun(): void {
+    const s = this.animSprite;
+    if (s && this.runFrames.length > 0) {
+      s.textures = this.runFrames;
+      s.loop = true;
+      s.animationSpeed = 3;
+      s.play();
+    }
+  }
+
   blood(): number {
     return 0xFF88CC44;
   }

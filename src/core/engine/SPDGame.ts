@@ -19,7 +19,7 @@ export class SPDGame extends Game {
     this.camera = new Camera();
     this.hudLayer = new Container();
     this.hudLayer.eventMode = 'none';
-    this.hudLayer.name = 'hud-layer';
+    this.hudLayer.label = 'hud-layer';
   }
 
   async init(container: HTMLElement): Promise<void> {
@@ -30,7 +30,7 @@ export class SPDGame extends Game {
 
   start(): void {
     this.lastTime = performance.now();
-    this.loop(this.lastTime);
+    this.loop(performance.now());
   }
 
   stop(): void {

@@ -7,7 +7,7 @@
 import { RegularBuilder } from './RegularBuilder';
 import { Builder } from './Builder';
 import { Room } from '../rooms/Room';
-import { ConnectionRoom } from '../rooms/connection/ConnectionRoom';
+import { createConnectionRoom } from '../rooms/connection/ConnectionRoomFactory';
 import { PointF } from '../../utils/Geom';
 import * as Random from '../../utils/Random';
 
@@ -72,7 +72,7 @@ export class LoopBuilder extends RegularBuilder {
       if (tunnels >= 0) pathTunnels[tunnels]!--;
 
       for (let j = 0; j < tunnels; j++) {
-        loop.push(ConnectionRoom.createRoom());
+        loop.push(createConnectionRoom());
       }
     }
 
@@ -91,7 +91,7 @@ export class LoopBuilder extends RegularBuilder {
     }
 
     while (!prev.connect(this.entrance)) {
-      const c = ConnectionRoom.createRoom();
+      const c = createConnectionRoom();
       if (Builder.placeRoom(loop, prev, c, Builder.angleBetweenRooms(prev, this.entrance)) === -1) {
         return null;
       }

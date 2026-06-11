@@ -420,7 +420,7 @@ export abstract class Room {
     return result;
   }
 
-  private intersect(other: Room): Rect {
+  intersect(other: Room): Rect {
     return {
       left: Math.max(this.left, other.left),
       top: Math.max(this.top, other.top),

@@ -31,6 +31,7 @@ export class Hero extends Char {
   gold = 0;
 
   belongings: Belongings;
+  resting = false;
 
   priority = Actor.HERO_PRIO;
 
@@ -66,5 +67,13 @@ export class Hero extends Char {
 
   damageRoll(): number {
     return IntRange(1, 6);
+  }
+
+  interrupt(): void {
+    this.resting = false;
+  }
+
+  isStarving(): boolean {
+    return false;
   }
 }

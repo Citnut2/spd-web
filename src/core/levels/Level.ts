@@ -25,6 +25,8 @@ import { Char } from '../actors/Char';
 import { Room } from './rooms/Room';
 import { Point, cellToPoint as geomCellToPoint, pointToCell as geomPointToCell } from '../utils/Geom';
 import { element } from '../utils/Random';
+import { Heap, setRemoveHeap } from '../items/Heap';
+import type { Item } from '../items/Item';
 
 export abstract class Level {
   // Feeling constants
@@ -47,6 +49,8 @@ export abstract class Level {
   losBlocking: boolean[] = [];
   avoid: boolean[] = [];
   heroFOV: boolean[] = [];
+  water: boolean[] = [];
+  flamable: boolean[] = [];
   visited: boolean[] = [];
   mapped: boolean[] = [];
   discoverable: boolean[] = [];
@@ -58,7 +62,7 @@ export abstract class Level {
 
   // Level generation fields
   feeling = Level.FEELING_NONE;
-  heaps: any[] = [];
+  heaps: Map<number, Heap> = new Map();
   itemsToSpawn: any[] = [];
   color1 = 0;
   color2 = 0;
@@ -73,7 +77,25 @@ export abstract class Level {
   abstract build(): boolean;
   abstract createMob(): Char | null;
 
+  occupyCell(_ch: Char): void {
+  }
+
+  drop(item: Item, cell: number): Heap {
+    let heap = this.heaps.get(cell);
+    if (heap === undefined) {
+      heap = new Heap();
+      heap.pos = cell;
+      this.heaps.set(cell, heap);
+    }
+    heap.drop(item);
+    return heap;
+  }
+
   create(): void {
+    setRemoveHeap((pos: number) => {
+      this.heaps.delete(pos);
+    });
+
     this.build();
     this.cleanWalls();
     this.updateFlags();
@@ -209,7 +231,7 @@ export abstract class Level {
   }
 
   tunnelTile(): number {
-    return Terrain.EMPTY;
+    return this.feeling === Level.FEELING_CHASM ? Terrain.EMPTY_SP : Terrain.EMPTY;
   }
 
   rooms: Room[] = [];

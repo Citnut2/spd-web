@@ -74,4 +74,14 @@ export class HeroSprite extends CharSprite {
       s.play();
     }
   }
+
+  protected override playRun(): void {
+    const s = this.animSprite;
+    if (s && this.runFrames.length > 0) {
+      s.textures = this.runFrames;
+      s.loop = true;
+      s.animationSpeed = 2;
+      s.play();
+    }
+  }
 }

@@ -4,9 +4,9 @@
 import { Dungeon } from '../../src/core/levels/Dungeon';
 import { Actor } from '../../src/core/actors/Actor';
 import { Mob } from '../../src/core/actors/mobs/Mob';
-import { Heap } from '../../src/core/items/Heap';
 import type { GameState, HeroState, LevelState, MobState, HeapState } from '../schema/GameState';
 import type { Action, TestScript, Direction } from '../schema/TestScript';
+import * as Random from '../../src/core/utils/Random';
 
 export class WebStateDumper {
   private script: TestScript;
@@ -31,6 +31,10 @@ export class WebStateDumper {
   initGame(): void {
     Actor.resetNextID();
     Dungeon.seed = this.convertSeed(this.script.seed);
+
+    Random.resetGenerators();
+    Random.pushGenerator(Dungeon.seed);
+
     Dungeon.init();
     Dungeon.newLevel();
     Dungeon.hero.pos = Dungeon.level.entrance;
@@ -73,16 +77,14 @@ export class WebStateDumper {
     }
 
     const heaps: HeapState[] = [];
-    for (const h of level.heaps) {
-      if (h instanceof Heap) {
-        heaps.push({
-          pos: h.pos,
-          items: h.items.map(item => ({
-            type: item.constructor.name,
-            quantity: item.itemQuantity
-          }))
-        });
-      }
+    for (const h of level.heaps.values()) {
+      heaps.push({
+        pos: h.pos,
+        items: h.items.map(item => ({
+          type: item.constructor.name,
+          quantity: item.itemQuantity
+        }))
+      });
     }
 
     this.level = {
@@ -140,11 +142,8 @@ export class WebStateDumper {
 
   private pickupItems(): void {
     const pos = Dungeon.hero.pos;
-    const heapIdx = Dungeon.level.heaps.findIndex(
-      (h: any) => h instanceof Heap && h.pos === pos
-    );
-    if (heapIdx !== -1) {
-      const heap = Dungeon.level.heaps[heapIdx] as Heap;
+    const heap = Dungeon.level.heaps.get(pos);
+    if (heap) {
       for (const item of heap.items) {
         if (this.hero) {
           this.hero.inventory.push({
@@ -153,7 +152,7 @@ export class WebStateDumper {
           });
         }
       }
-      Dungeon.level.heaps.splice(heapIdx, 1);
+      heap.destroy();
     }
   }
 

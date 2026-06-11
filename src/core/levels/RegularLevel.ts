@@ -1,24 +1,3 @@
-/*
- * Pixel Dungeon
- * Copyright (C) 2012-2015 Oleg Dolya
- *
- * Shattered Pixel Dungeon
- * Copyright (C) 2014-2025 Evan Debenham
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>
- */
-
 import { Level } from './Level';
 import { Room } from './rooms/Room';
 import { StandardRoom } from './rooms/standard/StandardRoom';
@@ -30,6 +9,12 @@ import { Terrain } from './Terrain';
 import { Dungeon } from './Dungeon';
 import * as Random from '../utils/Random';
 import { cellToPoint } from '../utils/Geom';
+import { Generator } from '../items/Generator';
+import {
+  createSpecialRoom,
+  initForFloor as initSpecialsForFloor,
+} from './rooms/special/index';
+
 export abstract class RegularLevel extends Level {
 
   rooms: Room[] = [];
@@ -83,10 +68,13 @@ export abstract class RegularLevel extends Level {
     }
 
     const specCount = this.specialRooms(false);
+    initSpecialsForFloor();
     for (let i = 0; i < specCount; i++) {
-      const r = new EmptyRoom();
-      r.setSize();
-      rooms.push(r);
+      const r = createSpecialRoom();
+      if (r) {
+        r.setSize();
+        rooms.push(r);
+      }
     }
 
     return rooms;
@@ -152,7 +140,15 @@ export abstract class RegularLevel extends Level {
   }
 
   override createItems(): void {
-    // stub: item spawning not yet ported
+    const nItems = 3 + Random.chances([6, 3, 1]);
+    for (let i = 0; i < nItems; i++) {
+      const toDrop = Generator.random();
+      const cell = this.randomDropCell();
+      if (this.map[cell] === Terrain.HIGH_GRASS || this.map[cell] === Terrain.FURROWED_GRASS) {
+        this.map[cell] = Terrain.GRASS;
+      }
+      this.drop(toDrop, cell);
+    }
   }
 
   private setLevelSize(rooms: Room[]): void {

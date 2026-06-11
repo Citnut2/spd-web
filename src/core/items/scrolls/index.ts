@@ -1,2 +1,13 @@
 export { Scroll } from './Scroll';
 export { ScrollOfUpgrade } from './ScrollOfUpgrade';
+export { ScrollOfIdentify } from './ScrollOfIdentify';
+export { ScrollOfRemoveCurse } from './ScrollOfRemoveCurse';
+export { ScrollOfTeleportation } from './ScrollOfTeleportation';
+export { ScrollOfMagicMapping } from './ScrollOfMagicMapping';
+export { ScrollOfRage } from './ScrollOfRage';
+export { ScrollOfTerror } from './ScrollOfTerror';
+export { ScrollOfLullaby } from './ScrollOfLullaby';
+export { ScrollOfRetribution } from './ScrollOfRetribution';
+export { ScrollOfMirrorImage } from './ScrollOfMirrorImage';
+export { ScrollOfRecharging } from './ScrollOfRecharging';
+export { ScrollOfTransmutation } from './ScrollOfTransmutation';

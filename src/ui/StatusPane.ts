@@ -109,4 +109,8 @@ export class StatusPane extends Container {
     this.depthText.x = BAR_WIDTH + 8;
     this.depthText.y = this.levelText.height + this.goldText.height + this.nameText.height + 3;
   }
+
+  get contentHeight(): number {
+    return this.depthText.y + this.depthText.height + 2;
+  }
 }

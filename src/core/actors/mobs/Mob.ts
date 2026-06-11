@@ -24,7 +24,6 @@ export abstract class Mob extends Char {
   lootChance = 0;
   loot: any = null;
 
-  // Perception
   enemy?: Char;
   enemyPos = -1;
   huntTime = 0;
@@ -33,11 +32,8 @@ export abstract class Mob extends Char {
   enemySeen = false;
   target = -1;
 
-  // Movement
   baseSpeed = 1;
-  flying = false;
 
-  // Properties
   protected _properties: Set<string> = new Set();
 
   constructor() {
@@ -51,8 +47,18 @@ export abstract class Mob extends Char {
 
   abstract act(): boolean;
 
-  /** Choose next action based on state */
+  chooseEnemy(): void {
+    const hero = Dungeon.hero;
+    if (!hero || !hero.isAlive()) {
+      this.enemy = undefined;
+      return;
+    }
+    if (this.enemy && this.enemy.isAlive()) return;
+    this.enemy = hero;
+  }
+
   actAI(): boolean {
+    this.chooseEnemy();
     if (this.state === MobState.SLEEPING) {
       return this.actSleep();
     }
@@ -144,21 +150,22 @@ export abstract class Mob extends Char {
     return true;
   }
 
-  /** Move to cell */
   move(cell: number): void {
     if (Dungeon.level && Dungeon.level.passable[cell]) {
+      const prev = this.pos;
       this.pos = cell;
+      if (this.sprite) {
+        this.sprite.startMove(prev, cell, Dungeon.level.width);
+      }
     }
   }
 
-  /** Get the next step toward a target using PathFinder */
   getStep(target: number): number {
     const level = Dungeon.level;
     if (!level) return -1;
     return PathFinder.getStep(this.pos, target, level.passable);
   }
 
-  /** Get the next step away from a threat */
   getStepAway(target: number): number {
     const level = Dungeon.level;
     if (!level) return -1;
@@ -185,7 +192,6 @@ export abstract class Mob extends Char {
     return Math.sqrt((ax - bx) ** 2 + (ay - by) ** 2);
   }
 
-  /** Check if this mob can attack a target */
   canAttack(enemy: Char): boolean {
     if (enemy.pos === this.pos) return true;
     const level = Dungeon.level;
@@ -195,31 +201,29 @@ export abstract class Mob extends Char {
     return Math.abs(dist.x - enemyP.x) <= 1 && Math.abs(dist.y - enemyP.y) <= 1;
   }
 
-  /** Perform attack on enemy */
   doAttack(enemy: Char): boolean {
+    if (this.sprite) {
+      this.sprite.turnTo(this.pos, enemy.pos);
+    }
     return this.attack(enemy);
   }
 
-  /** Check if mob can see a target via FOV */
   canSee(target: Char, fov: boolean[]): boolean {
     return fov[target.pos] === true;
   }
 
-  /** Random wander destination */
   protected randomDestination(): number {
     const level = Dungeon.level;
     if (!level) return -1;
     return level.getRandomEmptyCell();
   }
 
-  /** Is the hero surprised by this mob? */
   surprisedBy(hero: Char): boolean {
     if (this.enemy == null) return false;
     const d = this.distanceBetween(hero.pos, this.pos);
     return !this.enemySeen && d <= 1;
   }
 
-  /** Check for surprise attack */
   checkSurprise(hero: Char): boolean {
     if (this.surprisedBy(hero)) {
       return true;
@@ -227,24 +231,19 @@ export abstract class Mob extends Char {
     return false;
   }
 
-  /** Damage roll for surprise attacks */
   damageRoll(): number {
     return 1;
   }
 
-  /** Attack skill */
   attackSkill(_target: Char): number {
     return this.baseAttackSkill;
   }
 
-  /** Defense skill */
   defenseSkill(_target: Char): number {
     return this.baseDefenseSkill;
   }
 
-  /** Called when this character defends against an attack */
   defenseProc(_enemy: Char, damage: number): number {
-    // Override in subclasses for special effects on taking damage
     return damage;
   }
 }

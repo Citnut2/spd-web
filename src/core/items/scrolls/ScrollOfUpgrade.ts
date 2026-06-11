@@ -1,12 +1,15 @@
-// Port of com.shatteredpixel.shatteredpixeldungeon.items.scrolls.ScrollOfUpgrade
-
 import { Scroll } from './Scroll';
+import { ItemSpriteSheet } from '../../sprites/ItemSpriteSheet';
 
 export class ScrollOfUpgrade extends Scroll {
-  image = 0;
+  image = ItemSpriteSheet.SCROLL_KAUNAN;
 
-  effect(): void {
-    // Upgrade a random item
+  doRead(): void {
+    // stub
+  }
+
+  value(): number {
+    return 50 * this.itemQuantity;
   }
 
   name(): string {

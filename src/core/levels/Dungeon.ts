@@ -4,6 +4,7 @@ import { Hero, HeroClass } from '../hero/Hero';
 import { Level } from './Level';
 import { SewerLevel } from './SewerLevel';
 import { pushGenerator, popGenerator, Long } from '../utils/Random';
+import { Generator } from '../items/Generator';
 
 export class Dungeon {
   static hero: Hero;
@@ -25,9 +26,13 @@ export class Dungeon {
   static LimitedDrops = {
     SWARM_HP: { count: 0 },
     SLIME_WEP: { count: 0 },
+    LAB_ROOM: { count: 0 },
   };
 
   static init(): void {
+    Generator.init();
+    Generator.fullReset();
+
     Dungeon.depth = 1;
     Dungeon.gold = 0;
     Dungeon.energy = 0;
@@ -36,6 +41,9 @@ export class Dungeon {
   }
 
   static initHero(heroClass: HeroClass): void {
+    Generator.init();
+    Generator.fullReset();
+
     Dungeon.depth = 1;
     Dungeon.gold = 0;
     Dungeon.energy = 0;
@@ -99,6 +107,24 @@ export class Dungeon {
     Dungeon.depth++;
     Dungeon.itemsToSpawn = [];
     Dungeon.newLevel();
+  }
+
+  static bossLevel(): boolean;
+  static bossLevel(depth: number): boolean;
+  static bossLevel(depth?: number): boolean {
+    const d = depth ?? Dungeon.depth;
+    return d === 5 || d === 10 || d === 15 || d === 20 || d === 25;
+  }
+
+  static labRoomNeeded(): boolean {
+    const region = 1 + Math.floor(Dungeon.depth / 5);
+    if (region > Dungeon.LimitedDrops.LAB_ROOM.count) {
+      const floorThisRegion = Dungeon.depth % 5;
+      if (floorThisRegion >= 4 || (floorThisRegion === 3)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   static isChallenged(_challenge: number): boolean {

@@ -5,6 +5,7 @@ import { Float, IntRange } from '../utils/Random';
 import { GLog } from '../../ui/GLog';
 import { Game } from '../engine/Game';
 import type { Buff } from './buffs/Buff';
+import type { CharSprite } from '../sprites/CharSprite';
 
 export enum Alignment {
   ENEMY = 'ENEMY',
@@ -26,6 +27,12 @@ export abstract class Char extends Actor {
 
   needsShieldUpdate = false;
 
+  invisible = 0;
+  paralysed = 0;
+  flying = false;
+
+  sprite: CharSprite | null = null;
+
   // Buff management
   buffs: Buff[] = [];
 
@@ -33,13 +40,15 @@ export abstract class Char extends Actor {
     return this.HP > 0;
   }
 
-  /** Move to a new position */
   moveTo(newPos: number): void {
+    const prev = this.pos;
     this.pos = newPos;
     this.spend(Actor.TIME_TO_MOVE);
+    if (this.sprite) {
+      this.sprite.turnTo(prev, newPos);
+    }
   }
 
-  /** Check if a cell can be moved into */
   canMoveTo(cell: number, passable: boolean[]): boolean {
     return passable[cell] === true;
   }
@@ -48,8 +57,10 @@ export abstract class Char extends Actor {
     return this.constructor.name;
   }
 
-  /** Attack a target character */
   attack(target: Char): boolean {
+    if (this.sprite) {
+      this.sprite.turnTo(this.pos, target.pos);
+    }
     if (this.hit(target)) {
       const dmg = this.damageRoll();
       target.takeDamage(dmg, this);
@@ -72,7 +83,6 @@ export abstract class Char extends Actor {
     return false;
   }
 
-  /** Hit check: compare attacker skill vs defender skill */
   hit(target: Char): boolean {
     const accuracy = 1;
     const acuRoll = Float(this.baseAttackSkill);
@@ -80,17 +90,14 @@ export abstract class Char extends Actor {
     return acuRoll >= defRoll * accuracy;
   }
 
-  /** Base damage roll (overridden by subclasses) */
   damageRoll(): number {
     return IntRange(1, 4);
   }
 
-  /** Defense roll */
   drRoll(): number {
     return 0;
   }
 
-  /** Take damage */
   takeDamage(dmg: number, _src: Char): void {
     const effective = Math.max(0, dmg - this.drRoll());
     this.HP = Math.max(0, this.HP - effective);
@@ -103,7 +110,7 @@ export abstract class Char extends Actor {
     }
   }
 
-  // ----- Buff management (matching Java Char) -----
+  // ----- Buff management -----
 
   addBuff(buff: Buff): boolean {
     if (this.buffs.includes(buff)) return false;
@@ -144,12 +151,9 @@ export abstract class Char extends Actor {
   }
 
   resist<T extends Buff>(_cl: new (...args: any[]) => T): number {
-    // Default resistance is 1 (no resistance)
-    // Subclasses can override
     return 1;
   }
 
-  /** Speed considering buffs (Cripple, Slow, Haste, etc.) */
   speed(): number {
     let base = 1;
     if (this.hasBuff('Cripple')) base *= 0.5;

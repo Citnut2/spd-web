@@ -1,2 +1,13 @@
 export { Potion } from './Potion';
 export { PotionOfHealing } from './PotionOfHealing';
+export { PotionOfStrength } from './PotionOfStrength';
+export { PotionOfMindVision } from './PotionOfMindVision';
+export { PotionOfFrost } from './PotionOfFrost';
+export { PotionOfLiquidFlame } from './PotionOfLiquidFlame';
+export { PotionOfToxicGas } from './PotionOfToxicGas';
+export { PotionOfHaste } from './PotionOfHaste';
+export { PotionOfInvisibility } from './PotionOfInvisibility';
+export { PotionOfLevitation } from './PotionOfLevitation';
+export { PotionOfParalyticGas } from './PotionOfParalyticGas';
+export { PotionOfPurity } from './PotionOfPurity';
+export { PotionOfExperience } from './PotionOfExperience';

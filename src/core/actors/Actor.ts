@@ -44,6 +44,12 @@ export abstract class Actor {
     return Game.instance && this.time <= Game.instance.now;
   }
 
+  storeInBundle(_bundle: any): void {
+  }
+
+  restoreFromBundle(_bundle: any): void {
+  }
+
   static resetNextID(): void {
     Actor.nextID = 1;
   }

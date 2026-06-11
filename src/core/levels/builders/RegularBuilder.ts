@@ -8,7 +8,7 @@ import { Builder } from './Builder';
 import { Room } from '../rooms/Room';
 import * as Random from '../../utils/Random';
 import { StandardRoom } from '../rooms/standard/StandardRoom';
-import { ConnectionRoom } from '../rooms/connection/ConnectionRoom';
+import { createConnectionRoom } from '../rooms/connection/ConnectionRoomFactory';
 
 export abstract class RegularBuilder extends Builder {
   protected pathVariance = 45;
@@ -139,7 +139,7 @@ export abstract class RegularBuilder extends Builder {
       if (connectingRooms >= 0) connectionChances[connectingRooms]!--;
 
       for (let j = 0; j < connectingRooms; j++) {
-        const t = ConnectionRoom.createRoom();
+        const t = createConnectionRoom();
         tries = 3;
 
         do {

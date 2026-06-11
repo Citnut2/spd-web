@@ -17,6 +17,8 @@ import { HUD } from '../HUD';
 import { GLog } from '../GLog';
 import { PathFinder } from '../../core/utils/PathFinder';
 import { Renderer } from '../../core/engine/Renderer';
+import { WndBag } from '../windows/WndBag';
+
 export class GameScene extends Scene {
   private cameraRef: Camera | null = null;
   private dungeonRenderer: DungeonRenderer | null = null;
@@ -47,7 +49,6 @@ export class GameScene extends Scene {
 
     if (!this.cameraRef || !hero) return;
 
-    // Load ALL assets first — avoids multiple setLevel calls
     const waterPath = lvl.waterTex();
     if (waterPath) {
       await Assets.load(waterPath);
@@ -58,14 +59,10 @@ export class GameScene extends Scene {
       Assets.load('assets/sprites/slime.png'),
     ]);
 
-    // ── Tile renderer (tiles + water in one shot) ──
     this.dungeonRenderer = new DungeonRenderer(this.cameraRef);
     await this.dungeonRenderer.loadTileSheet('assets/environment/tiles_sewers.png');
     this.dungeonRenderer.setLevel(lvl);
 
-
-
-    // ── Sprites ──
     this.heroSprite = new HeroSprite();
     this.heroSprite.init(heroTex);
     this.heroSprite.link(hero, this.mapWidth);
@@ -89,19 +86,15 @@ export class GameScene extends Scene {
       this.dungeonRenderer.sprites.addChild(sprite);
     }
 
-    // ── Fog of War ──
     this.fogOfWar = new FogOfWar(lvl.width, lvl.height);
     this.container.addChild(this.dungeonRenderer.container);
     this.container.addChild(this.fogOfWar);
 
-    // Initialize FOV + fog so the screen isn't all black
     this.updateFogAndVisibility(hero);
 
-    // Snap camera to hero on initial load (subsequent moves use smooth pan)
     this.cameraRef.snapToCell(hero.pos, this.mapWidth);
     this.cameraRef.update();
 
-    // ── HUD ──
     this.spdGame = Game.instance as SPDGame;
     this.hud = new HUD(hero);
     this.spdGame.hudLayer.addChild(this.hud.container);
@@ -117,14 +110,18 @@ export class GameScene extends Scene {
         this.processTurn(h, level);
       },
       onInventory: () => {
-        GLog.add('## Inventory: coming soon');
+        const h = Dungeon.hero;
+        if (!h) return;
+        const wnd = new WndBag(h);
+        wnd.x = (Renderer.VIRTUAL_WIDTH - WndBag.WIDTH) / 2;
+        wnd.y = (Renderer.VIRTUAL_HEIGHT - WndBag.HEIGHT) / 2;
+        this.container.addChild(wnd);
       },
       onSearch: () => {
         GLog.add('@@Searching...');
       },
     });
 
-    // ── Input (keyboard + mouse) ──
     this.setupInput();
     this.setupPointerInput();
   }
@@ -186,7 +183,6 @@ export class GameScene extends Scene {
         if (!enemy.isAlive()) {
           hero.gainExp((enemy as Mob).EXP || 1);
         }
-        // Update HUD after damage
         if (enemy && !enemy.isAlive()) {
           const idx = this.mobSprites.indexOf(
             this.mobSprites.find(s => s['ch'] === enemy)!
@@ -197,7 +193,6 @@ export class GameScene extends Scene {
         }
       } else {
         hero.moveTo(target);
-        // Start smooth sprite movement
         this.heroSprite?.startMove(oldPos, hero.pos, this.mapWidth, () => {
           this.onMoveComplete(hero);
         });
@@ -205,7 +200,6 @@ export class GameScene extends Scene {
         return;
       }
 
-      // No movement — process mob turns and update immediately
       this.processTurn(hero, level);
     };
 
@@ -231,7 +225,6 @@ export class GameScene extends Scene {
   }
 
   private handleCellClick(cell: number, hero: Char, level: any): void {
-    // Check for enemy at clicked cell
     for (const mob of level.mobs as Mob[]) {
       if (mob.pos === cell && mob.isAlive()) {
         hero.attack(mob);
@@ -262,7 +255,6 @@ export class GameScene extends Scene {
 
     const next = this.pathQueue.shift()!;
 
-    // Check for enemy at next position
     for (const mob of level.mobs as Mob[]) {
       if (mob.pos === next && mob.isAlive()) {
         hero.attack(mob);
@@ -295,25 +287,16 @@ export class GameScene extends Scene {
   }
 
   private processTurn(hero: Char, level: any): void {
-    // Process mob turns using their full AI state machines
     for (const mob of level.mobs as Mob[]) {
       if (!mob.isAlive()) continue;
       mob.actAI();
     }
 
-    // Update visibility + fog after this turn
     level.updateFieldOfView();
     this.updateFogAndVisibility(hero);
 
-    // Update mob sprite positions
-    for (const s of this.mobSprites) {
-      s.updateSprite(this.mapWidth);
-    }
-
-    // Camera target follows hero
     this.cameraRef?.centerOnCell(hero.pos, this.mapWidth);
 
-    // Refresh HUD after actions
     this.hud?.refresh();
     this.hud?.setEnabled(true);
     this.isBusy = false;

@@ -82,6 +82,12 @@ export abstract class Buff extends Actor {
     return '';
   }
 
+  override storeInBundle(_bundle: any): void {
+  }
+
+  override restoreFromBundle(_bundle: any): void {
+  }
+
   protected dispTurns(input: number): string {
     return input.toFixed(2);
   }
@@ -159,6 +165,13 @@ export abstract class Buff extends Actor {
     const buff = Buff.affect(target, buffClass);
     buff.countUp(count);
     return buff;
+  }
+
+  static detach<T extends Buff>(
+    target: Char,
+    buffClass: new (...args: any[]) => T
+  ): void {
+    return Buff.detachBuff(target, buffClass);
   }
 
   static detachBuff<T extends Buff>(
